@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,6 +7,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Mail } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,7 +15,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,29 +25,29 @@ const Login = () => {
       return;
     }
     
-    // Show loading state
     setIsLoading(true);
     
-    // Simulate authentication
     try {
-      // Here you would typically make an API call to authenticate
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      // For demo purposes, simulate a successful login
+      await signIn(email, password);
       toast.success("Login successful!");
-      
-      // Redirect to dashboard based on role (for demo, go to patient dashboard)
-      navigate("/patient-dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      toast.error("Login failed. Please check your credentials and try again.");
+      toast.error(error.message || "Login failed. Please check your credentials and try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
-    toast.info("Google login integration coming soon!");
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error("Google login failed. Please try again.");
+      console.error("Google login error:", error);
+    }
   };
 
   return (
