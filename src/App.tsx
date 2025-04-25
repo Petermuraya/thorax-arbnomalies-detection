@@ -18,18 +18,17 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/patient-dashboard" element={<PatientDashboard />} />
-            <Route path="/health-staff-dashboard" element={<HealthStaffDashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
+        {/* Move TooltipProvider inside the components that need it */}
+        <Toaster />
+        <Sonner />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/patient-dashboard" element={<PatientDashboard />} />
+          <Route path="/health-staff-dashboard" element={<HealthStaffDashboard />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
