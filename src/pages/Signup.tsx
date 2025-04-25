@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Mail, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
@@ -22,6 +24,7 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { signUp } = useAuth();
 
   // Password strength state
   const [passwordStrength, setPasswordStrength] = useState({
@@ -100,24 +103,27 @@ const Signup = () => {
     setIsLoading(true);
     
     try {
-      // Here you would typically make an API call to register the user
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      // For demo purposes, simulate a successful registration
+      await signUp(email, password, { full_name: fullName, role: role });
       toast.success("Account created successfully! Verification email sent.");
-      
-      // Redirect to login page
       navigate("/login");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      toast.error("Registration failed. Please try again.");
+      toast.error(error.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleSignup = () => {
-    toast.info("Google signup integration coming soon!");
+  const handleGoogleSignup = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error("Google signup failed. Please try again.");
+      console.error("Google signup error:", error);
+    }
   };
 
   return (

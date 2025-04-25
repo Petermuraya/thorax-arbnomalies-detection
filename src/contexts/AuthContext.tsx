@@ -22,29 +22,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      (event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
         setLoading(false);
 
+        // Use setTimeout to avoid navigation issues
         if (event === 'SIGNED_IN') {
-          if (session?.user.user_metadata.role === 'patient') {
-            navigate('/patient-dashboard');
-          } else {
-            navigate('/health-staff-dashboard');
-          }
+          setTimeout(() => {
+            if (currentSession?.user?.user_metadata?.role === 'patient') {
+              navigate('/patient-dashboard');
+            } else {
+              navigate('/health-staff-dashboard');
+            }
+          }, 0);
         } else if (event === 'SIGNED_OUT') {
-          navigate('/login');
+          setTimeout(() => {
+            navigate('/login');
+          }, 0);
         }
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       setLoading(false);
     });
 
