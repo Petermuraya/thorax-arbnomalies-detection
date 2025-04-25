@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,20 +7,24 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Calendar, User, CheckCheck, AlertCircle, Clock, Search } from "lucide-react";
+import { Calendar, User, CheckCheck, AlertCircle, Clock, Search, Upload, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
 
 const HealthStaffDashboard = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const { user, signOut } = useAuth();
 
   // Sample health staff data
   const staffData = {
-    name: "Dr. Michael Rodriguez",
+    name: user?.user_metadata?.full_name || "Dr. Medical Professional",
     role: "Radiologist",
-    email: "m.rodriguez@xrayinsight.com",
-    lastLogin: "April 25, 2025, 9:15 AM",
+    email: user?.email || "professional@chest.com",
+    lastLogin: new Date().toLocaleString(),
   };
   
   // Sample statistics
@@ -29,7 +32,9 @@ const HealthStaffDashboard = () => {
     pendingReviews: 5,
     reviewedToday: 12,
     totalReviewed: 1458,
-    accuracy: 98.7
+    accuracy: 98.7,
+    totalEarnings: 4520,
+    earningsThisMonth: 560
   };
   
   // Sample patient list
@@ -94,7 +99,8 @@ const HealthStaffDashboard = () => {
       date: "April 24, 2025",
       time: "4:40 PM",
       findings: "Confirmed mild bronchial wall thickening. Recommended follow-up in 4 weeks.",
-      aiAccuracy: "High"
+      aiAccuracy: "High",
+      earnings: "$45"
     },
     {
       id: "XR-8912",
@@ -114,16 +120,52 @@ const HealthStaffDashboard = () => {
     }
   ];
 
-  const handleLogout = () => {
-    toast.info("Logging out...");
-    setTimeout(() => {
-      navigate("/");
-    }, 1000);
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to log out. Please try again.");
+    }
   };
 
   const handleReviewCase = (reportId: string) => {
     toast.info(`Opening report ${reportId} for review`);
     navigate(`/case-review/${reportId}`);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error("Please select a file to upload");
+      return;
+    }
+    
+    if (!selectedFile.type.includes("image")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    try {
+      // Simulate upload process
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
+      toast.success("Chest X-ray uploaded successfully");
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload X-ray. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const filteredPatients = searchQuery
@@ -142,9 +184,9 @@ const HealthStaffDashboard = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 rounded-md overflow-hidden hero-gradient flex items-center justify-center">
-              <span className="text-white font-bold text-xl">X</span>
+              <span className="text-white font-bold text-xl">C</span>
             </div>
-            <span className="font-bold text-xl text-medical-gray-dark">XRay Insight</span>
+            <span className="font-bold text-xl text-medical-gray-dark">Chest</span>
           </div>
           <div className="flex items-center space-x-4">
             <Button 
@@ -179,8 +221,8 @@ const HealthStaffDashboard = () => {
         </div>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+          <Card className="col-span-1">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">Pending Reviews</CardTitle>
             </CardHeader>
@@ -189,13 +231,13 @@ const HealthStaffDashboard = () => {
                 <Clock className="h-8 w-8 text-yellow-500 mr-3" />
                 <div>
                   <p className="text-3xl font-semibold text-medical-gray-dark">{statistics.pendingReviews}</p>
-                  <p className="text-sm text-medical-gray">Awaiting your assessment</p>
+                  <p className="text-sm text-medical-gray">Awaiting</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="col-span-1">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">Reviewed Today</CardTitle>
             </CardHeader>
@@ -204,13 +246,13 @@ const HealthStaffDashboard = () => {
                 <CheckCheck className="h-8 w-8 text-green-500 mr-3" />
                 <div>
                   <p className="text-3xl font-semibold text-medical-gray-dark">{statistics.reviewedToday}</p>
-                  <p className="text-sm text-medical-gray">Cases completed today</p>
+                  <p className="text-sm text-medical-gray">Cases today</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="col-span-1">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">Total Reviewed</CardTitle>
             </CardHeader>
@@ -221,13 +263,13 @@ const HealthStaffDashboard = () => {
                 </div>
                 <div>
                   <p className="text-3xl font-semibold text-medical-gray-dark">{statistics.totalReviewed}</p>
-                  <p className="text-sm text-medical-gray">All-time reviews</p>
+                  <p className="text-sm text-medical-gray">All-time</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="col-span-1">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">AI Agreement</CardTitle>
             </CardHeader>
@@ -235,7 +277,37 @@ const HealthStaffDashboard = () => {
               <div className="space-y-2">
                 <p className="text-3xl font-semibold text-medical-gray-dark">{statistics.accuracy}%</p>
                 <Progress value={statistics.accuracy} className="h-2" />
-                <p className="text-sm text-medical-gray">AI accuracy correlation</p>
+                <p className="text-sm text-medical-gray">AI correlation</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Monthly Earnings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <DollarSign className="h-8 w-8 text-green-600 mr-3" />
+                <div>
+                  <p className="text-3xl font-semibold text-medical-gray-dark">${statistics.earningsThisMonth}</p>
+                  <p className="text-sm text-medical-gray">This month</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Total Earnings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <DollarSign className="h-8 w-8 text-blue-600 mr-3" />
+                <div>
+                  <p className="text-3xl font-semibold text-medical-gray-dark">${statistics.totalEarnings}</p>
+                  <p className="text-sm text-medical-gray">All-time</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -254,7 +326,7 @@ const HealthStaffDashboard = () => {
                   </Badge>
                 </CardTitle>
                 <CardDescription>
-                  X-rays awaiting your professional assessment
+                  Chest X-rays awaiting your professional assessment
                 </CardDescription>
                 <div className="relative mt-2">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-medical-gray" />
@@ -341,10 +413,100 @@ const HealthStaffDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Upload Section */}
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle className="text-lg font-medium">Upload Patient Chest X-ray</CardTitle>
+                <CardDescription>
+                  Upload a chest X-ray for AI analysis and consultation
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="border-2 border-dashed border-medical-gray-light rounded-lg p-6 text-center">
+                  <input
+                    id="file-upload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  {selectedFile ? (
+                    <div>
+                      <p className="text-medical-gray-dark mb-2">
+                        Selected file:
+                      </p>
+                      <p className="text-medical-blue font-medium mb-4">
+                        {selectedFile.name}
+                      </p>
+                      <div className="flex justify-center">
+                        <Button 
+                          variant="outline" 
+                          className="mr-2"
+                          onClick={() => setSelectedFile(null)}
+                        >
+                          Change
+                        </Button>
+                        <Button 
+                          className="bg-medical-blue hover:bg-medical-blue-dark"
+                          onClick={handleUpload}
+                          disabled={isUploading}
+                        >
+                          {isUploading ? "Uploading..." : "Upload Now"}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="h-10 w-10 text-medical-gray mx-auto mb-4" />
+                      <p className="text-medical-gray mb-4">
+                        Drag and drop a chest X-ray image here, or click to browse
+                      </p>
+                      <Button 
+                        variant="outline"
+                        onClick={() => document.getElementById("file-upload")?.click()}
+                      >
+                        Browse Files
+                      </Button>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-medical-gray mt-2">
+                  Supported formats: JPG, PNG, DICOM. Maximum file size: 20MB.
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right Column */}
           <div className="space-y-8">
+            {/* Earnings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-medium">Earnings Breakdown</CardTitle>
+                <CardDescription>
+                  Your revenue from consultations and reviews
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-medical-gray-dark">Consultations</span>
+                    <span className="font-medium">$320</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-medical-gray-dark">X-ray Reviews</span>
+                    <span className="font-medium">$240</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between items-center font-semibold">
+                    <span className="text-medical-gray-dark">Total This Month</span>
+                    <span className="text-medical-blue">${statistics.earningsThisMonth}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
             {/* Recent Reviews */}
             <Card>
               <CardHeader>
@@ -361,54 +523,26 @@ const HealthStaffDashboard = () => {
                         <h3 className="font-semibold text-medical-gray-dark">{review.patientName}</h3>
                         <p className="text-xs text-medical-gray">{review.id} • {review.date} {review.time}</p>
                       </div>
-                      <Badge 
-                        variant="outline" 
-                        className={`${
-                          review.aiAccuracy === "High" ? "border-green-500 text-green-700" :
-                          review.aiAccuracy === "Medium" ? "border-yellow-500 text-yellow-700" :
-                          "border-red-500 text-red-700"
-                        }`}
-                      >
-                        {review.aiAccuracy} AI Match
-                      </Badge>
+                      <div className="flex items-center space-x-2">
+                        <Badge 
+                          variant="outline" 
+                          className={`${
+                            review.aiAccuracy === "High" ? "border-green-500 text-green-700" :
+                            review.aiAccuracy === "Medium" ? "border-yellow-500 text-yellow-700" :
+                            "border-red-500 text-red-700"
+                          }`}
+                        >
+                          {review.aiAccuracy} AI Match
+                        </Badge>
+                        <Badge className="bg-green-100 text-green-800">
+                          {review.earnings}
+                        </Badge>
+                      </div>
                     </div>
                     <p className="text-sm text-medical-gray-dark">{review.findings}</p>
                     {index < recentReviews.length - 1 && <Separator className="mt-4" />}
                   </div>
                 ))}
-              </CardContent>
-            </Card>
-
-            {/* Daily Schedule */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg font-medium">Today's Schedule</CardTitle>
-                <CardDescription>
-                  Your appointments for {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <Calendar className="h-5 w-5 text-medical-blue mt-1 mr-3" />
-                    <div>
-                      <p className="font-medium text-medical-gray-dark">Team Meeting</p>
-                      <p className="text-sm text-medical-gray">2:00 PM - 3:00 PM</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <Calendar className="h-5 w-5 text-medical-blue mt-1 mr-3" />
-                    <div>
-                      <p className="font-medium text-medical-gray-dark">Patient Consultation</p>
-                      <p className="text-sm text-medical-gray">4:15 PM - 4:45 PM</p>
-                      <p className="text-sm text-medical-gray">Maria Rodriguez</p>
-                    </div>
-                  </div>
-                </div>
-                <Separator className="my-4" />
-                <Button variant="outline" className="w-full">
-                  View Full Calendar
-                </Button>
               </CardContent>
             </Card>
 
@@ -424,23 +558,11 @@ const HealthStaffDashboard = () => {
                       <AlertCircle className="h-5 w-5 text-medical-blue" />
                     </div>
                     <div>
-                      <p className="font-medium text-medical-gray-dark">System Maintenance</p>
+                      <p className="font-medium text-medical-gray-dark">Patient Analysis Complete</p>
                       <p className="text-sm text-medical-gray">
-                        Scheduled maintenance on April 30th from 2AM - 4AM EST.
+                        AI analysis completed for 3 patients. Ready for your review.
                       </p>
                       <p className="text-xs text-medical-gray mt-1">2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="mt-1 mr-3 h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <CheckCheck className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-medical-gray-dark">AI Model Updated</p>
-                      <p className="text-sm text-medical-gray">
-                        The AI diagnostic model has been updated to version 3.2.1 with improved accuracy.
-                      </p>
-                      <p className="text-xs text-medical-gray mt-1">1 day ago</p>
                     </div>
                   </div>
                 </div>

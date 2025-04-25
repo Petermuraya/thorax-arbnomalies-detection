@@ -44,6 +44,13 @@ const Login = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
       });
       if (error) throw error;
     } catch (error: any) {
@@ -60,7 +67,7 @@ const Login = () => {
         <div className="w-full max-w-md px-4">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-medical-gray-dark mb-2">Welcome back</h1>
-            <p className="text-medical-gray">Log in to your XRay Insight account</p>
+            <p className="text-medical-gray">Log in to your Chest account</p>
           </div>
           
           <div className="medical-card p-8 mb-6">

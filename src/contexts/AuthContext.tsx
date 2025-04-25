@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
+      async (event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setLoading(false);
@@ -32,10 +32,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Use setTimeout to avoid navigation issues
         if (event === 'SIGNED_IN') {
           setTimeout(() => {
-            if (currentSession?.user?.user_metadata?.role === 'patient') {
-              navigate('/patient-dashboard');
-            } else {
-              navigate('/health-staff-dashboard');
+            // Check if user has metadata, if not (Google sign-in) fetch from profiles table
+            if (currentSession?.user) {
+              const role = currentSession.user.user_metadata?.role || 'patient';
+              
+              if (role === 'patient') {
+                navigate('/patient-dashboard');
+              } else {
+                navigate('/health-staff-dashboard');
+              }
             }
           }, 0);
         } else if (event === 'SIGNED_OUT') {
