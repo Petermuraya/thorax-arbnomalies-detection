@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,25 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// X-ray Insight specific colors
+				medical: {
+					blue: {
+						light: '#4285F4',
+						DEFAULT: '#0077CC',
+						dark: '#005599'
+					},
+					teal: {
+						light: '#42E9D9',
+						DEFAULT: '#20C997',
+						dark: '#0D9B79'
+					},
+					gray: {
+						lightest: '#F8F9FA',
+						light: '#E9ECEF',
+						DEFAULT: '#6C757D',
+						dark: '#343A40'
+					}
 				}
 			},
 			borderRadius: {
@@ -84,11 +104,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-slow': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.7' },
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
 			}
 		}
 	},
