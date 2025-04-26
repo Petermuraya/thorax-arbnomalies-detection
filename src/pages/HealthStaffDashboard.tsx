@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,7 +10,7 @@ import { toast } from 'sonner';
 const HealthStaffDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { verification } = useHealthcareVerification();
+  const { verification, loading } = useHealthcareVerification();
 
   useEffect(() => {
     if (!user) {
@@ -23,6 +24,16 @@ const HealthStaffDashboard = () => {
     }
   }, [user, navigate]);
 
+  // Show loading state while verification status is being determined
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 flex justify-center items-center">
+        <p className="text-gray-500">Loading verification status...</p>
+      </div>
+    );
+  }
+
+  // If not verified or pending verification
   if (!verification || verification.status !== 'approved') {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

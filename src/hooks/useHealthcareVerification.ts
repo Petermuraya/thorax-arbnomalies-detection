@@ -34,7 +34,9 @@ export const useHealthcareVerification = () => {
           .single();
 
         if (error && error.code !== 'PGRST116') throw error;
-        setVerification(data);
+        if (data) {
+          setVerification(data as HealthcareVerification);
+        }
       } catch (error) {
         console.error('Error fetching verification:', error);
       } finally {
@@ -79,9 +81,9 @@ export const useHealthcareVerification = () => {
 
       if (insertError) throw insertError;
 
-      setVerification(data);
+      setVerification(data as HealthcareVerification);
       toast.success('Verification documents submitted successfully');
-      return data;
+      return data as HealthcareVerification;
     } catch (error) {
       console.error('Error submitting verification:', error);
       toast.error('Failed to submit verification documents');
