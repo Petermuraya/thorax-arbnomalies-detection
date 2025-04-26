@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,26 +7,61 @@ import { toast } from "sonner";
 import { Calendar, Upload, User, FileText, History, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChestAnalysis } from "@/hooks/useChestAnalysis";
+import { useConsultations } from "@/hooks/useConsultations";
 
 const PatientDashboard = () => {
   const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { user, signOut } = useAuth();
+  const { analyses, loading: analysesLoading, uploadImage } = useChestAnalysis();
+  const { consultations, loading: consultationsLoading } = useConsultations();
 
-  // Sample patient data
-  const patientData = {
-    name: user?.user_metadata?.full_name || "Jane Cooper",
-    email: user?.email || "jane.cooper@example.com",
-    lastLogin: new Date().toLocaleString(),
-    recentUploads: 3,
-    pendingReports: 1,
-    completedReports: 5,
-    totalBilled: 450,
-    pendingPayment: 120
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
   };
-  
-  // Sample report history
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error("Please select a file to upload");
+      return;
+    }
+    
+    if (!selectedFile.type.includes("image")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    try {
+      await uploadImage(selectedFile);
+      setSelectedFile(null);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Calculate statistics
+  const totalBilled = consultations.reduce((sum, consultation) => sum + consultation.cost, 0);
+  const pendingPayment = consultations
+    .filter(c => c.status === 'scheduled')
+    .reduce((sum, consultation) => sum + consultation.cost, 0);
+
+  const patientData = {
+    name: user?.user_metadata?.full_name || "Patient",
+    email: user?.email || "",
+    lastLogin: new Date().toLocaleString(),
+    recentUploads: analyses.length,
+    pendingReports: analyses.filter(a => a.status === 'pending').length,
+    completedReports: analyses.filter(a => a.status === 'completed').length,
+    totalBilled,
+    pendingPayment
+  };
+
   const reportHistory = [
     {
       id: "XR-8765",
@@ -70,8 +104,7 @@ const PatientDashboard = () => {
       cost: "$80"
     }
   ];
-  
-  // Sample pending report
+
   const pendingReport = {
     id: "XR-8921",
     date: "April 24, 2025",
@@ -80,7 +113,6 @@ const PatientDashboard = () => {
     estimatedCost: "$80"
   };
 
-  // Sample billing history
   const billingHistory = [
     {
       id: "INV-2451",
@@ -125,55 +157,6 @@ const PatientDashboard = () => {
       status: "Pending"
     }
   ];
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      toast.error("Please select a file to upload");
-      return;
-    }
-    
-    // Check if file is an image
-    if (!selectedFile.type.includes("image")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-    
-    setIsUploading(true);
-    
-    try {
-      // Simulate upload process
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      toast.success("Chest X-ray uploaded successfully");
-      setSelectedFile(null);
-      
-      // Navigate to analysis result after short delay
-      setTimeout(() => {
-        navigate("/analysis-result");
-      }, 1000);
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload X-ray. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      toast.success("Logged out successfully");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Failed to log out. Please try again.");
-    }
-  };
 
   return (
     <div className="min-h-screen bg-medical-gray-lightest">
