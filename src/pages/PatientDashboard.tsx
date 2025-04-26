@@ -18,6 +18,16 @@ const PatientDashboard = () => {
   const { analyses, loading: analysesLoading, uploadImage } = useChestAnalysis();
   const { consultations, loading: consultationsLoading } = useConsultations();
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
@@ -45,7 +55,6 @@ const PatientDashboard = () => {
     }
   };
 
-  // Calculate statistics
   const totalBilled = consultations.reduce((sum, consultation) => sum + consultation.cost, 0);
   const pendingPayment = consultations
     .filter(c => c.status === 'scheduled')
@@ -160,7 +169,6 @@ const PatientDashboard = () => {
 
   return (
     <div className="min-h-screen bg-medical-gray-lightest">
-      {/* Header */}
       <header className="bg-white border-b border-medical-gray-light shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
@@ -189,7 +197,6 @@ const PatientDashboard = () => {
         </div>
       </header>
 
-      {/* Dashboard Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-medical-gray-dark">
@@ -204,7 +211,6 @@ const PatientDashboard = () => {
           </Button>
         </div>
 
-        {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-2">
@@ -258,9 +264,7 @@ const PatientDashboard = () => {
           </Card>
         </div>
 
-        {/* Main Dashboard Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Patient Reports */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="pending">
               <div className="flex justify-between items-center mb-4">
@@ -416,9 +420,7 @@ const PatientDashboard = () => {
             </Tabs>
           </div>
 
-          {/* Right Column - Upload and Calendar */}
           <div>
-            {/* Upload Section */}
             <Card className="mb-8" id="upload-section">
               <CardHeader>
                 <CardTitle className="text-lg font-medium">Upload Chest X-ray</CardTitle>
@@ -481,7 +483,6 @@ const PatientDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Chest Health History */}
             <Card className="mb-8">
               <CardHeader>
                 <CardTitle className="text-lg font-medium">Chest Health History</CardTitle>
@@ -516,7 +517,6 @@ const PatientDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Upcoming Appointments */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-medium">Upcoming Appointments</CardTitle>

@@ -31,7 +31,7 @@ export const useConsultations = () => {
           .order('scheduled_for', { ascending: false });
 
         if (error) throw error;
-        setConsultations(data || []);
+        setConsultations(data as Consultation[]);
       } catch (error) {
         console.error('Error fetching consultations:', error);
         toast.error('Failed to load consultations');

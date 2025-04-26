@@ -31,7 +31,7 @@ export const useChestAnalysis = () => {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setAnalyses(data || []);
+        setAnalyses(data as ChestAnalysis[]);
       } catch (error) {
         console.error('Error fetching analyses:', error);
         toast.error('Failed to load chest analyses');
