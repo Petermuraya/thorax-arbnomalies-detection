@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       chest_analysis: {
         Row: {
+          ai_prediction: string | null
           analysis_result: string | null
           created_at: string | null
           doctor_id: string | null
@@ -22,6 +23,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_prediction?: string | null
           analysis_result?: string | null
           created_at?: string | null
           doctor_id?: string | null
@@ -33,6 +35,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_prediction?: string | null
           analysis_result?: string | null
           created_at?: string | null
           doctor_id?: string | null
@@ -78,6 +81,45 @@ export type Database = {
           scheduled_for?: string
           status?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      healthcare_verification: {
+        Row: {
+          created_at: string | null
+          document_path: string
+          id: string
+          license_number: string
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          specialization: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          document_path: string
+          id?: string
+          license_number: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          specialization: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          document_path?: string
+          id?: string
+          license_number?: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          specialization?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
