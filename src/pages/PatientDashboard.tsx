@@ -9,13 +9,16 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChestAnalysis } from "@/hooks/useChestAnalysis";
 import { useConsultations } from "@/hooks/useConsultations";
+import XrayUploader from "@/components/XrayUploader";
+import AIAnalysisViewer from "@/components/AIAnalysisViewer";
 
 const PatientDashboard = () => {
   const navigate = useNavigate();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const { user, signOut } = useAuth();
-  const { analyses, loading: analysesLoading, uploadImage } = useChestAnalysis();
+  const { analyses, loading: analysesLoading } = useChestAnalysis();
   const { consultations, loading: consultationsLoading } = useConsultations();
 
   const handleLogout = async () => {
@@ -28,31 +31,25 @@ const PatientDashboard = () => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
+  const handleImageUploaded = (imageUrl: string, file: File) => {
+    setUploadedImageUrl(imageUrl);
+    setUploadedFile(file);
+    toast.success("X-ray uploaded successfully");
+    
+    // Scroll to analysis section
+    setTimeout(() => {
+      document.getElementById("analysis-section")?.scrollIntoView({ 
+        behavior: "smooth",
+        block: "start"
+      });
+    }, 500);
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      toast.error("Please select a file to upload");
-      return;
-    }
+  const handleAnalysisComplete = (result: string) => {
+    setAnalysisResult(result);
     
-    if (!selectedFile.type.includes("image")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-    
-    setIsUploading(true);
-    
-    try {
-      await uploadImage(selectedFile);
-      setSelectedFile(null);
-    } finally {
-      setIsUploading(false);
-    }
+    // Simulate sending to doctor for review
+    toast.success("Analysis complete! Results sent to healthcare professional for review.");
   };
 
   const totalBilled = consultations.reduce((sum, consultation) => sum + consultation.cost, 0);
@@ -113,14 +110,6 @@ const PatientDashboard = () => {
       cost: "$80"
     }
   ];
-
-  const pendingReport = {
-    id: "XR-8921",
-    date: "April 24, 2025",
-    status: "Pending Review",
-    uploadedAt: "10:15 AM",
-    estimatedCost: "$80"
-  };
 
   const billingHistory = [
     {
@@ -277,39 +266,39 @@ const PatientDashboard = () => {
               </div>
 
               <TabsContent value="pending">
-                {pendingReport ? (
+                {analysisResult ? (
                   <Card>
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-6">
                         <div>
                           <h3 className="text-lg font-semibold text-medical-gray-dark">
-                            Report #{pendingReport.id}
+                            New Analysis Result
                           </h3>
-                          <p className="text-medical-gray">Uploaded on {pendingReport.date} at {pendingReport.uploadedAt}</p>
+                          <p className="text-medical-gray">Uploaded on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}</p>
                         </div>
                         <div className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium">
-                          {pendingReport.status}
+                          Pending Review
                         </div>
                       </div>
                       
                       <div className="rounded-md bg-medical-gray-lightest p-4 mb-4">
-                        <div className="flex items-center mb-4">
-                          <div className="animate-pulse-slow h-4 w-4 rounded-full bg-medical-teal mr-2"></div>
-                          <span className="text-medical-gray-dark font-medium">Analysis in progress</span>
-                        </div>
-                        <p className="text-medical-gray text-sm">
-                          Your chest X-ray is being analyzed by our AI system and will be reviewed by a healthcare professional.
-                          Results are typically available within 30 minutes.
+                        <h4 className="font-medium mb-2">AI Analysis Results:</h4>
+                        <p className="text-medical-gray-dark">
+                          {analysisResult}
                         </p>
+                        <div className="mt-4">
+                          <div className="animate-pulse flex items-center text-medical-teal">
+                            <div className="h-2.5 w-2.5 rounded-full bg-medical-teal mr-2"></div>
+                            <span className="text-sm font-medium">Sent for healthcare professional review</span>
+                          </div>
+                          <p className="mt-2 text-sm text-medical-gray">
+                            A healthcare professional will review your results and provide final interpretation.
+                          </p>
+                        </div>
                         <div className="mt-3 flex items-center justify-between">
                           <span className="text-sm text-medical-gray">Estimated cost:</span>
-                          <span className="font-medium text-medical-gray-dark">{pendingReport.estimatedCost}</span>
+                          <span className="font-medium text-medical-gray-dark">$80</span>
                         </div>
-                      </div>
-                      
-                      <div className="flex justify-end">
-                        <Button variant="outline" className="mr-2">View Details</Button>
-                        <Button variant="outline" className="text-red-500 hover:text-red-700 hover:bg-red-50">Cancel Analysis</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -421,69 +410,16 @@ const PatientDashboard = () => {
           </div>
 
           <div>
-            <Card className="mb-8" id="upload-section">
-              <CardHeader>
-                <CardTitle className="text-lg font-medium">Upload Chest X-ray</CardTitle>
-                <CardDescription>
-                  Upload your chest X-ray for AI analysis
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="border-2 border-dashed border-medical-gray-light rounded-lg p-6 text-center">
-                  <input
-                    id="file-upload"
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                  {selectedFile ? (
-                    <div>
-                      <p className="text-medical-gray-dark mb-2">
-                        Selected file:
-                      </p>
-                      <p className="text-medical-blue font-medium mb-4">
-                        {selectedFile.name}
-                      </p>
-                      <div className="flex justify-center">
-                        <Button 
-                          variant="outline" 
-                          className="mr-2"
-                          onClick={() => setSelectedFile(null)}
-                        >
-                          Change
-                        </Button>
-                        <Button 
-                          className="bg-medical-blue hover:bg-medical-blue-dark"
-                          onClick={handleUpload}
-                          disabled={isUploading}
-                        >
-                          {isUploading ? "Uploading..." : "Upload Now"}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="h-10 w-10 text-medical-gray mx-auto mb-4" />
-                      <p className="text-medical-gray mb-4">
-                        Drag and drop your chest X-ray image here, or click to browse
-                      </p>
-                      <Button 
-                        variant="outline"
-                        onClick={() => document.getElementById("file-upload")?.click()}
-                      >
-                        Browse Files
-                      </Button>
-                    </>
-                  )}
-                </div>
-                <p className="text-xs text-medical-gray mt-2">
-                  Supported formats: JPG, PNG, DICOM. Maximum file size: 20MB.
-                </p>
-              </CardContent>
-            </Card>
+            <XrayUploader onImageUploaded={handleImageUploaded} />
+            
+            <div id="analysis-section" className="mt-6">
+              <AIAnalysisViewer 
+                imageUrl={uploadedImageUrl || ""} 
+                onAnalysisComplete={handleAnalysisComplete} 
+              />
+            </div>
 
-            <Card className="mb-8">
+            <Card className="mt-6">
               <CardHeader>
                 <CardTitle className="text-lg font-medium">Chest Health History</CardTitle>
                 <CardDescription>
@@ -517,7 +453,7 @@ const PatientDashboard = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="mt-6">
               <CardHeader>
                 <CardTitle className="text-lg font-medium">Upcoming Appointments</CardTitle>
                 <CardDescription>
