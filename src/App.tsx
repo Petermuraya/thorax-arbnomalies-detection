@@ -11,6 +11,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import PatientDashboard from "./pages/PatientDashboard";
 import HealthStaffDashboard from "./pages/HealthStaffDashboard";
+import UserProfile from "./pages/UserProfile";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 // Create a new QueryClient instance
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/patient-dashboard" element={<PatientDashboard />} />
           <Route path="/health-staff-dashboard" element={<HealthStaffDashboard />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>

@@ -41,7 +41,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               const role = currentSession.user.user_metadata?.role || 'patient';
               toast.success(`Welcome back, ${currentSession.user.user_metadata?.full_name || currentSession.user.email}`);
               
-              if (role === 'patient') {
+              if (role === 'admin') {
+                navigate('/admin-dashboard');
+              } else if (role === 'patient') {
                 navigate('/patient-dashboard');
               } else {
                 navigate('/health-staff-dashboard');
@@ -53,6 +55,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             toast.info("You have been signed out");
             navigate('/login');
           }, 0);
+        } else if (event === 'USER_UPDATED') {
+          // Refresh user data
+          setUser(currentSession?.user ?? null);
         }
       }
     );
@@ -81,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: `${window.location.origin}/login`,
       },
     });
 

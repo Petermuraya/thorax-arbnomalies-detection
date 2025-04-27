@@ -1,14 +1,22 @@
 
-import { User } from "lucide-react";
+import { User, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const DashboardHeader = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const userName = user?.user_metadata?.full_name || "Patient";
+  const userName = user?.user_metadata?.full_name || "User";
   const userImage = user?.user_metadata?.avatar_url;
 
   const handleLogout = async () => {
@@ -30,20 +38,38 @@ export const DashboardHeader = () => {
           <span className="font-bold text-xl text-medical-gray-dark">X-Ray Insight</span>
         </div>
         <div className="flex items-center space-x-4">
-          <div className="hidden md:flex items-center space-x-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={userImage} />
-              <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <span className="text-sm font-medium text-medical-gray-dark">{userName}</span>
-          </div>
-          <Button 
-            variant="outline" 
-            className="border-medical-gray-light hover:bg-medical-gray-lightest"
-            onClick={handleLogout}
-          >
-            Log out
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={userImage} />
+                  <AvatarFallback className="bg-medical-blue text-white">{userName.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>
+                <div className="flex flex-col">
+                  <span>{userName}</span>
+                  <span className="text-xs text-muted-foreground">{user?.email}</span>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/profile')}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
