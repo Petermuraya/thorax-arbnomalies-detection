@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -129,7 +129,7 @@ const ResetPassword = () => {
             <p className="text-medical-gray">Please choose a new secure password</p>
           </div>
           
-          <div className="medical-card p-8 mb-6">
+          <div className="medical-card p-8 mb-6 shadow-lg border border-gray-100 rounded-xl">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="password" className="label-text">
@@ -214,10 +214,15 @@ const ResetPassword = () => {
               
               <Button 
                 type="submit" 
-                className="w-full bg-medical-blue hover:bg-medical-blue-dark"
+                className="w-full bg-medical-blue hover:bg-medical-blue-dark flex items-center justify-center gap-2"
                 disabled={isLoading}
               >
-                {isLoading ? "Updating..." : "Reset password"}
+                {isLoading ? "Updating..." : (
+                  <>
+                    <ShieldCheck className="h-5 w-5" />
+                    Reset password
+                  </>
+                )}
               </Button>
             </form>
           </div>

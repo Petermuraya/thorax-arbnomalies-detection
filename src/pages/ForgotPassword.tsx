@@ -4,15 +4,16 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Mail } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Mail, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +26,7 @@ const ForgotPassword = () => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + "/reset-password",
-      });
-      
-      if (error) throw error;
-      
+      await resetPassword(email);
       setIsSubmitted(true);
       toast.success("Password reset link sent to your email");
     } catch (error: any) {
@@ -52,7 +48,7 @@ const ForgotPassword = () => {
             <p className="text-medical-gray">We'll send you an email with instructions</p>
           </div>
           
-          <div className="medical-card p-8 mb-6">
+          <div className="medical-card p-8 mb-6 shadow-lg border border-gray-100 rounded-xl">
             {isSubmitted ? (
               <div className="text-center">
                 <div className="rounded-full bg-green-100 w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -105,12 +101,10 @@ const ForgotPassword = () => {
           </div>
           
           <div className="text-center">
-            <p className="text-medical-gray">
-              Remember your password?{" "}
-              <Link to="/login" className="font-medium text-medical-blue hover:text-medical-blue-dark">
-                Back to login
-              </Link>
-            </p>
+            <Link to="/login" className="font-medium text-medical-blue hover:text-medical-blue-dark inline-flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to login
+            </Link>
           </div>
         </div>
       </div>
