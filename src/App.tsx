@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -15,11 +16,9 @@ import UserProfile from "./pages/UserProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
-// Create a new QueryClient instance
 const queryClient = new QueryClient();
 
 const App = () => (
-  // Move QueryClientProvider inside BrowserRouter
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -31,10 +30,43 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/patient-dashboard" element={<PatientDashboard />} />
-          <Route path="/health-staff-dashboard" element={<HealthStaffDashboard />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          
+          <Route 
+            path="/patient-dashboard" 
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <PatientDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/health-staff-dashboard" 
+            element={
+              <ProtectedRoute allowedRoles={['healthstaff']}>
+                <HealthStaffDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/admin-dashboard" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            } 
+          />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
