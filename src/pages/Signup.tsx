@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { SignupForm } from "@/components/auth/signup/SignupForm";
 import { GoogleSignupButton } from "@/components/auth/signup/GoogleSignupButton";
@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 
 const Signup = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Redirect if already logged in
   useEffect(() => {
