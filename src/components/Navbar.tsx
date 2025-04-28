@@ -5,10 +5,22 @@ import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { userRole } = useRolePermissions();
+
+  const handleDashboardClick = () => {
+    if (userRole === 'admin') {
+      return '/admin-dashboard';
+    } else if (userRole === 'healthstaff') {
+      return '/health-staff-dashboard';
+    } else {
+      return '/patient-dashboard';
+    }
+  };
 
   return (
     <TooltipProvider>
@@ -23,9 +35,19 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Authentication Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+          {/* Dashboard Link for logged in users */}
+          {user && (
+            <div className="hidden md:flex items-center space-x-4">
+              <Link to={handleDashboardClick()}>
+                <Button variant="outline" className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
+                  Dashboard
+                </Button>
+              </Link>
+              <Link to="/profile">
+                <Button variant="outline" className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
+                  Profile
+                </Button>
+              </Link>
               <Button 
                 variant="outline" 
                 className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white"
@@ -33,21 +55,24 @@ const Navbar = () => {
               >
                 Log out
               </Button>
-            ) : (
-              <>
-                <Link to="/login">
-                  <Button variant="outline" className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
-                    Log in
-                  </Button>
-                </Link>
-                <Link to="/signup">
-                  <Button className="bg-medical-blue hover:bg-medical-blue-dark">
-                    Sign up
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Authentication Buttons */}
+          {!user && (
+            <div className="hidden md:flex items-center space-x-4">
+              <Link to="/login">
+                <Button variant="outline" className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
+                  Log in
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="bg-medical-blue hover:bg-medical-blue-dark">
+                  Sign up
+                </Button>
+              </Link>
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <button
@@ -63,8 +88,18 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-white border-t border-medical-gray-light">
             <div className="container mx-auto px-4 py-3 flex flex-col space-y-3">
-              <div className="pt-2 flex flex-col space-y-2">
-                {user ? (
+              {user ? (
+                <>
+                  <Link to={handleDashboardClick()} onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" className="w-full border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" className="w-full border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
+                      Profile
+                    </Button>
+                  </Link>
                   <Button 
                     variant="outline" 
                     className="w-full border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white"
@@ -75,21 +110,21 @@ const Navbar = () => {
                   >
                     Log out
                   </Button>
-                ) : (
-                  <>
-                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="outline" className="w-full border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
-                        Log in
-                      </Button>
-                    </Link>
-                    <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                      <Button className="w-full bg-medical-blue hover:bg-medical-blue-dark">
-                        Sign up
-                      </Button>
-                    </Link>
-                  </>
-                )}
-              </div>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" className="w-full border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
+                      Log in
+                    </Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full bg-medical-blue hover:bg-medical-blue-dark">
+                      Sign up
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

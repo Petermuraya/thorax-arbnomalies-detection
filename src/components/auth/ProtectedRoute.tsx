@@ -1,16 +1,25 @@
 
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: string[];
+  redirectPath?: string;
 }
 
-export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ 
+  children, 
+  allowedRoles,
+  redirectPath 
+}: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const { userRole } = useRolePermissions();
 
+  // Show loading state while authenticating
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -19,15 +28,19 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     );
   }
 
+  // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  const userRole = user.user_metadata?.role || 'patient';
-
+  // Check if user has the required role
   if (allowedRoles && !allowedRoles.includes(userRole)) {
+    toast.error(`Access denied. You don't have permission to access this page.`);
+    
     // Redirect to appropriate dashboard based on role
-    if (userRole === 'admin') {
+    if (redirectPath) {
+      return <Navigate to={redirectPath} replace />;
+    } else if (userRole === 'admin') {
       return <Navigate to="/admin-dashboard" replace />;
     } else if (userRole === 'healthstaff') {
       return <Navigate to="/health-staff-dashboard" replace />;

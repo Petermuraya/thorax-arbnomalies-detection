@@ -15,6 +15,7 @@ import HealthStaffDashboard from "./pages/HealthStaffDashboard";
 import UserProfile from "./pages/UserProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import AdminSignup from "./components/auth/AdminSignup";
 
 const queryClient = new QueryClient();
 
@@ -25,16 +26,21 @@ const App = () => (
         <Toaster />
         <Sonner />
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           
+          {/* Hidden Admin Registration */}
+          <Route path="/secure-admin-registration" element={<AdminSignup />} />
+          
+          {/* Protected routes with role-based access */}
           <Route 
             path="/patient-dashboard" 
             element={
-              <ProtectedRoute allowedRoles={['patient']}>
+              <ProtectedRoute allowedRoles={['patient', 'admin']}>
                 <PatientDashboard />
               </ProtectedRoute>
             } 
@@ -43,7 +49,7 @@ const App = () => (
           <Route 
             path="/health-staff-dashboard" 
             element={
-              <ProtectedRoute allowedRoles={['healthstaff']}>
+              <ProtectedRoute allowedRoles={['healthstaff', 'admin']}>
                 <HealthStaffDashboard />
               </ProtectedRoute>
             } 
