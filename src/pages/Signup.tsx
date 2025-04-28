@@ -115,6 +115,8 @@ const Signup = () => {
     setIsLoading(true);
     
     try {
+      // Make sure we're using the exact role values 'patient' or 'healthstaff'
+      // that match the database constraint
       await signUp(email, password, { full_name: fullName, role: role });
       toast.success("Account created successfully! Verification email sent.");
       navigate("/login");

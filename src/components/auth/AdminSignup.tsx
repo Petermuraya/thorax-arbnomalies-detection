@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -98,6 +97,7 @@ const AdminSignup = () => {
     setIsLoading(true);
     
     try {
+      // Use the exact role value 'admin' that matches the database constraint
       await signUp(email, password, { full_name: fullName, role: 'admin' });
       toast.success("Admin account created successfully! Verification email sent.");
       navigate("/login");
