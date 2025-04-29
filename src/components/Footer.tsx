@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -11,7 +10,7 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-md overflow-hidden hero-gradient flex items-center justify-center">
                 <span className="text-white font-bold">X</span>
               </div>
-              <span className="font-bold text-xl">XRay Insight</span>
+              <span className="font-bold text-xl">ThoraxIQ: Revolutionizing Chest X-Ray Diagnosis with AI</span>
             </Link>
             <p className="text-medical-gray max-w-md">
               Fast, AI-powered chest X-ray analysis for better healthcare outcomes.
@@ -91,7 +90,7 @@ const Footer = () => {
         </div>
         <div className="mt-8 pt-6 border-t border-medical-gray-light">
           <p className="text-medical-gray text-sm text-center">
-            © {new Date().getFullYear()} XRay Insight. All rights reserved.
+            © {new Date().getFullYear()} ThoraxIQ: Revolutionizing Chest X-Ray Diagnosis with AI. All rights reserved.
           </p>
         </div>
       </div>
