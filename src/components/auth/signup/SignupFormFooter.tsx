@@ -8,12 +8,14 @@ interface SignupFormFooterProps {
   termsAccepted: boolean;
   setTermsAccepted: (value: boolean) => void;
   isLoading: boolean;
+  buttonText?: string;
 }
 
 export const SignupFormFooter = ({
   termsAccepted,
   setTermsAccepted,
-  isLoading
+  isLoading,
+  buttonText = "Create account"
 }: SignupFormFooterProps) => {
   return (
     <>
@@ -46,7 +48,7 @@ export const SignupFormFooter = ({
         {isLoading ? "Creating account..." : (
           <>
             <UserPlus className="h-5 w-5" />
-            Create account
+            {buttonText}
           </>
         )}
       </Button>

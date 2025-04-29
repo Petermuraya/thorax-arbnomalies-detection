@@ -4,13 +4,19 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-export const GoogleSignupButton = () => {
+interface GoogleSignupButtonProps {
+  role?: string;
+}
+
+export const GoogleSignupButton = ({ role = "patient" }: GoogleSignupButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { signInWithGoogle } = useAuth();
 
   const handleGoogleSignup = async () => {
     try {
       setIsLoading(true);
+      // Store the selected role in localStorage to be used after OAuth redirect
+      localStorage.setItem("signupRole", role);
       await signInWithGoogle();
     } catch (error: any) {
       toast.error("Google signup failed. Please try again.");

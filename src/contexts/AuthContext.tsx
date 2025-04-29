@@ -38,7 +38,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setTimeout(() => {
             // Check if user has metadata, if not (Google sign-in) fetch from profiles table
             if (currentSession?.user) {
-              const role = currentSession.user.user_metadata?.role || 'patient';
+              let role = currentSession.user.user_metadata?.role || 'patient';
+              
+              // If this is a new Google signup, check for stored role preference
+              if (event === 'SIGNED_IN' && !currentSession.user.user_metadata?.role) {
+                const storedRole = localStorage.getItem("signupRole");
+                if (storedRole) {
+                  role = storedRole;
+                  // Clear stored role
+                  localStorage.removeItem("signupRole");
+                  
+                  // Update user metadata with the selected role
+                  supabase.auth.updateUser({
+                    data: { role: storedRole }
+                  }).catch(error => {
+                    console.error("Error updating user role:", error);
+                  });
+                }
+              }
+              
               toast.success(`Welcome back, ${currentSession.user.user_metadata?.full_name || currentSession.user.email}`);
               
               if (role === 'admin') {
