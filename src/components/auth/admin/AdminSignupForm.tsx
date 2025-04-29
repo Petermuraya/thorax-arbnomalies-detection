@@ -46,7 +46,20 @@ export const AdminSignupForm = () => {
       navigate("/login");
     } catch (error: any) {
       console.error("Registration error:", error);
-      toast.error(error.message || "Registration failed. Please try again.");
+      let errorMessage = "Registration failed. Please try again.";
+      
+      // Extract more specific error messages if available
+      if (error.message) {
+        if (error.message.includes("role_check")) {
+          errorMessage = "Invalid role selection. Please contact the system administrator.";
+        } else if (error.message.includes("User already registered")) {
+          errorMessage = "This email is already registered. Please use a different email or login instead.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

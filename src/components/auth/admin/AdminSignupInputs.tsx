@@ -1,7 +1,7 @@
 
-import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Mail, User, KeyRound } from "lucide-react";
 import { useState } from "react";
+import { Eye, EyeOff, Mail, User, KeyRound } from "lucide-react";
+import { IconInput } from "../shared/IconInput";
 import { PasswordStrengthIndicator } from "../shared/PasswordStrengthIndicator";
 
 interface AdminSignupInputsProps {
@@ -34,54 +34,40 @@ export const AdminSignupInputs = ({
 
   return (
     <>
-      <div>
-        <label htmlFor="fullName" className="label-text">
-          Full Name
-        </label>
-        <div className="relative mt-1">
-          <Input
-            id="fullName"
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="input-field pl-10"
-            placeholder="John Smith"
-            required
-          />
-          <User className="absolute left-3 top-3 h-5 w-5 text-medical-gray" />
-        </div>
-      </div>
+      <IconInput
+        id="fullName"
+        type="text"
+        value={fullName}
+        onChange={(e) => setFullName(e.target.value)}
+        label="Full Name"
+        placeholder="John Smith"
+        Icon={User}
+        required
+      />
       
-      <div>
-        <label htmlFor="email" className="label-text">
-          Email address
-        </label>
-        <div className="relative mt-1">
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="input-field pl-10"
-            placeholder="name@company.com"
-            autoComplete="email"
-            required
-          />
-          <Mail className="absolute left-3 top-3 h-5 w-5 text-medical-gray" />
-        </div>
-      </div>
+      <IconInput
+        id="email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        label="Email address"
+        placeholder="name@company.com"
+        Icon={Mail}
+        autoComplete="email"
+        required
+      />
       
       <div>
         <label htmlFor="password" className="label-text">
           Password
         </label>
         <div className="relative mt-1">
-          <Input
+          <input
             id="password"
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="input-field pr-10"
+            className="input-field w-full h-10 px-3 py-2 border border-gray-300 rounded-md pr-10"
             placeholder="••••••••"
             autoComplete="new-password"
             required
@@ -107,12 +93,12 @@ export const AdminSignupInputs = ({
           Confirm Password
         </label>
         <div className="relative mt-1">
-          <Input
+          <input
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="input-field pr-10"
+            className="input-field w-full h-10 px-3 py-2 border border-gray-300 rounded-md pr-10"
             placeholder="••••••••"
             autoComplete="new-password"
             required
@@ -132,23 +118,16 @@ export const AdminSignupInputs = ({
         </div>
       </div>
       
-      <div>
-        <label htmlFor="adminKey" className="label-text">
-          Admin Registration Key
-        </label>
-        <div className="relative mt-1">
-          <Input
-            id="adminKey"
-            type="password"
-            value={adminKey}
-            onChange={(e) => setAdminKey(e.target.value)}
-            className="input-field pl-10"
-            placeholder="Enter admin key"
-            required
-          />
-          <KeyRound className="absolute left-3 top-3 h-5 w-5 text-medical-gray" />
-        </div>
-      </div>
+      <IconInput
+        id="adminKey"
+        type="password"
+        value={adminKey}
+        onChange={(e) => setAdminKey(e.target.value)}
+        label="Admin Registration Key"
+        placeholder="Enter admin key"
+        Icon={KeyRound}
+        required
+      />
     </>
   );
 };
