@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Twitter, Linkedin, Facebook } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
@@ -23,17 +23,20 @@ const Navbar = () => {
 
   return (
     <TooltipProvider>
-      <header className="fixed w-full top-0 bg-white/90 backdrop-blur-sm shadow-sm z-50">
+      <header className="fixed w-full top-0 bg-white/95 backdrop-blur-md shadow z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-md overflow-hidden bg-medical-blue flex items-center justify-center">
-              <span className="text-white font-bold text-xl">TQ</span>
+          {/* Brand */}
+          <Link to="/" className="flex items-center space-x-3">
+            <div className="w-11 h-11 rounded-full bg-medical-blue flex items-center justify-center shadow-md">
+              <span className="text-white font-extrabold text-lg">TQ</span>
             </div>
-            <span className="font-bold text-xl text-medical-gray-dark hidden sm:inline-block">
-              ThoraxIQ
-            </span>
+            <div className="flex flex-col">
+              <span className="font-bold text-xl text-medical-gray-dark">ThoraxIQ</span>
+              <span className="text-xs text-medical-gray">AI Chest X-ray Insight</span>
+            </div>
           </Link>
 
+          {/* Main Navigation */}
           {user && (
             <div className="hidden md:flex items-center space-x-4">
               <Link to={handleDashboardClick()}>
@@ -47,7 +50,7 @@ const Navbar = () => {
                 </Button>
               </Link>
               <Button 
-                variant="outline" 
+                variant="outline"
                 className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white"
                 onClick={signOut}
               >
@@ -71,18 +74,20 @@ const Navbar = () => {
             </div>
           )}
 
+          {/* Mobile Menu Button */}
           <button
             className="md:hidden text-medical-gray-dark"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
           </button>
         </div>
 
+        {/* Mobile Dropdown Menu */}
         {isMenuOpen && (
           <div className="md:hidden bg-white border-t border-medical-gray-light">
-            <div className="container mx-auto px-4 py-3 flex flex-col space-y-3">
+            <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
               {user ? (
                 <>
                   <Link to={handleDashboardClick()} onClick={() => setIsMenuOpen(false)}>
@@ -96,7 +101,7 @@ const Navbar = () => {
                     </Button>
                   </Link>
                   <Button 
-                    variant="outline" 
+                    variant="outline"
                     className="w-full border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white"
                     onClick={() => {
                       signOut();
@@ -121,16 +126,21 @@ const Navbar = () => {
                 </>
               )}
 
-              {/* Footer Links */}
-              <div className="pt-4 border-t border-medical-gray-light text-center text-medical-gray-dark text-sm">
-                <p className="mb-2">Connect with Sammy Peter</p>
-                <div className="flex justify-center space-x-4">
-                  <a href="https://www.linkedin.com/in/sammy-peter" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-                  <a href="https://twitter.com/SammyPeter" target="_blank" rel="noopener noreferrer">Twitter</a>
-                  <a href="https://www.facebook.com/sammy.peter.12/" target="_blank" rel="noopener noreferrer">Facebook</a>
+              {/* Social Links */}
+              <div className="pt-4 border-t border-medical-gray-light text-center text-medical-gray-dark text-sm space-y-3">
+                <p className="text-medical-gray-dark font-medium">Connect with Sammy Peter</p>
+                <div className="flex justify-center space-x-6">
+                  <a href="https://twitter.com/SammyPeter" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                    <Twitter size={20} />
+                  </a>
+                  <a href="https://www.linkedin.com/in/sammy-peter" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <Linkedin size={20} />
+                  </a>
+                  <a href="https://www.facebook.com/sammy.peter.12/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                    <Facebook size={20} />
+                  </a>
                 </div>
               </div>
-
             </div>
           </div>
         )}
