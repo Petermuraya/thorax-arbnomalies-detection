@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+// Define valid roles for database constraint to work
+const VALID_USER_ROLES = ['patient', 'healthstaff', 'admin'];
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -40,10 +43,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (currentSession?.user) {
               let role = currentSession.user.user_metadata?.role || 'patient';
               
+              // Ensure role is valid to avoid database constraint issues
+              if (!VALID_USER_ROLES.includes(role)) {
+                role = 'patient';
+              }
+              
               // If this is a new Google signup, check for stored role preference
               if (event === 'SIGNED_IN' && !currentSession.user.user_metadata?.role) {
                 const storedRole = localStorage.getItem("signupRole");
-                if (storedRole) {
+                if (storedRole && VALID_USER_ROLES.includes(storedRole)) {
                   role = storedRole;
                   // Clear stored role
                   localStorage.removeItem("signupRole");
@@ -112,6 +120,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, metadata: { full_name: string; role: string }) => {
+    // Validate role to avoid database constraint errors
+    if (!VALID_USER_ROLES.includes(metadata.role)) {
+      throw new Error(`Invalid role: ${metadata.role}. Must be one of: ${VALID_USER_ROLES.join(', ')}`);
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password,

@@ -50,7 +50,10 @@ export const HealthcareSignupForm = () => {
     setIsLoading(true);
     
     try {
-      await signUp(email, password, { full_name: fullName, role: 'healthstaff' });
+      await signUp(email, password, { 
+        full_name: fullName, 
+        role: 'healthstaff'  // Ensure this matches the allowed value in the database
+      });
       toast.success("Account created successfully! Verification email sent.");
       navigate("/login");
     } catch (error: any) {

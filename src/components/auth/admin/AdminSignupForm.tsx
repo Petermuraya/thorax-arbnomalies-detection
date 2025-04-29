@@ -38,7 +38,10 @@ export const AdminSignupForm = () => {
     setIsLoading(true);
     
     try {
-      await signUp(email, password, { full_name: fullName, role: 'admin' });
+      await signUp(email, password, { 
+        full_name: fullName, 
+        role: 'admin' 
+      });
       toast.success("Admin account created successfully! Verification email sent.");
       navigate("/login");
     } catch (error: any) {

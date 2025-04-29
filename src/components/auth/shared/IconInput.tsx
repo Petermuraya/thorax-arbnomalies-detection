@@ -12,6 +12,7 @@ interface IconInputProps {
   Icon: LucideIcon;
   required?: boolean;
   autoComplete?: string;
+  disabled?: boolean;
 }
 
 export const IconInput = ({
@@ -23,7 +24,8 @@ export const IconInput = ({
   placeholder,
   Icon,
   required = true,
-  autoComplete
+  autoComplete,
+  disabled = false
 }: IconInputProps) => {
   return (
     <div>
@@ -40,6 +42,7 @@ export const IconInput = ({
           placeholder={placeholder}
           required={required}
           autoComplete={autoComplete}
+          disabled={disabled}
         />
         <Icon className="absolute left-3 top-3 h-5 w-5 text-medical-gray" />
       </div>
