@@ -18,6 +18,7 @@ import UserProfile from "./pages/UserProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import AdminSignup from "./components/auth/AdminSignup";
+import SuperuserCreation from "./pages/SuperuserCreation";
 
 const queryClient = new QueryClient();
 
@@ -40,11 +41,14 @@ const App = () => (
           {/* Hidden Admin Registration */}
           <Route path="/secure-admin-registration" element={<AdminSignup />} />
           
+          {/* Superuser Creation */}
+          <Route path="/create-superuser" element={<SuperuserCreation />} />
+          
           {/* Protected routes with role-based access */}
           <Route 
             path="/patient-dashboard" 
             element={
-              <ProtectedRoute allowedRoles={['patient', 'admin']}>
+              <ProtectedRoute allowedRoles={['patient', 'admin', 'superuser']}>
                 <PatientDashboard />
               </ProtectedRoute>
             } 
@@ -53,7 +57,7 @@ const App = () => (
           <Route 
             path="/health-staff-dashboard" 
             element={
-              <ProtectedRoute allowedRoles={['healthstaff', 'admin']}>
+              <ProtectedRoute allowedRoles={['healthstaff', 'admin', 'superuser']}>
                 <HealthStaffDashboard />
               </ProtectedRoute>
             } 
@@ -62,7 +66,7 @@ const App = () => (
           <Route 
             path="/admin-dashboard" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'superuser']}>
                 <AdminDashboard />
               </ProtectedRoute>
             } 

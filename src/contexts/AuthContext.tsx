@@ -69,7 +69,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               
               toast.success(`Welcome back, ${currentSession.user.user_metadata?.full_name || currentSession.user.email}`);
               
-              if (role === 'admin') {
+              // Handle superuser navigation
+              if (role === 'superuser') {
+                navigate('/admin-dashboard'); // Superusers default to admin dashboard
+              } else if (role === 'admin') {
                 navigate('/admin-dashboard');
               } else if (role === 'patient') {
                 navigate('/patient-dashboard');

@@ -17,7 +17,7 @@ export const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const location = useLocation();
-  const { userRole } = useRolePermissions();
+  const { userRole, isSuperuser } = useRolePermissions();
 
   // Show loading state while authenticating
   if (loading) {
@@ -31,6 +31,11 @@ export const ProtectedRoute = ({
   // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Superusers can access any route
+  if (isSuperuser) {
+    return <>{children}</>;
   }
 
   // Check if user has the required role
