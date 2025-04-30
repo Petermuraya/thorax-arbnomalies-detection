@@ -7,30 +7,30 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// NavButton Component with Hover Effects
-const NavButton = ({ to, children, onClick, primary = false, icon: Icon }) => (
+type NavButtonProps = {
+  to: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+  primary?: boolean;
+  icon?: React.ElementType;
+};
+
+const NavButton = ({ to, children, onClick = () => {}, primary = false, icon: Icon }: NavButtonProps) => (
   <Link to={to} onClick={onClick}>
     <Button
       variant={primary ? 'default' : 'outline'}
       className={`group transition-all duration-300 ease-in-out ${
         primary
-          ? 'bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 shadow-lg hover:shadow-xl text-white'
+          ? 'bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-md'
           : 'border-blue-500 text-blue-600 hover:bg-blue-50/50 hover:border-blue-600 hover:text-blue-700'
       }`}
     >
-      {Icon && (
-        <Icon 
-          className={`mr-2 h-4 w-4 transition-transform ${
-            primary ? 'group-hover:translate-x-1' : 'group-hover:scale-110'
-          }`} 
-        />
-      )}
+      {Icon && <Icon className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />}
       {children}
     </Button>
   </Link>
 );
 
-// SocialLinks Component with Hover Animations
 const SocialLinks = () => {
   const socials = [
     { icon: Twitter, url: 'https://twitter.com/SammyPeter', label: 'Twitter', color: 'text-sky-400 hover:text-sky-500' },
@@ -61,7 +61,6 @@ const SocialLinks = () => {
   );
 };
 
-// Navbar Component
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
@@ -75,64 +74,61 @@ const Navbar = () => {
 
   return (
     <TooltipProvider>
-      <header className="fixed w-full top-0 bg-white/95 backdrop-blur-lg shadow-sm z-50 border-b border-blue-100/50">
+      <header className="fixed w-full top-0 z-50 border-b border-blue-100/50 bg-white/90 backdrop-blur-lg shadow-sm">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          {/* Brand with Floating Animation */}
+
           <motion.div whileHover={{ y: -1 }}>
             <Link to="/" className="flex items-center space-x-3">
-              <motion.div 
-                className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-lg"
-                whileHover={{ rotate: 10 }}
+              <motion.div
+                className="w-11 h-11 rounded-full overflow-hidden shadow-lg flex items-center justify-center"
+                whileHover={{ rotate: 8 }}
                 transition={{ type: 'spring', stiffness: 300 }}
               >
-                <span className="text-white font-extrabold text-lg">TQ</span>
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/10260/10260604.png"
+                  alt="ThoraxIQ Logo"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.replaceWith(document.createTextNode('TQ'));
+                  }}
+                />
               </motion.div>
               <div className="flex flex-col">
                 <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-sky-500">
                   ThoraxIQ
                 </span>
-                <span className="text-xs text-blue-500/80">AI-Powered Chest Diagnostics</span>
+                <span className="text-xs text-blue-500/80">AI-Powered Diagnostics</span>
               </div>
             </Link>
           </motion.div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-3">
             {user ? (
               <>
-                <NavButton to={dashboardPath} icon={User}>
-                  Dashboard
-                </NavButton>
-                <NavButton to="/profile" icon={User}>
-                  Profile
-                </NavButton>
+                <NavButton to={dashboardPath} icon={User}>Dashboard</NavButton>
+                <NavButton to="/profile" icon={User}>Profile</NavButton>
                 <Button
                   variant="outline"
-                  className="border-blue-500 text-blue-600 hover:bg-blue-50/50 hover:border-blue-600 hover:text-blue-700 transition-colors group"
+                  className="border-blue-500 text-blue-600 hover:bg-blue-50/50 hover:border-blue-600 hover:text-blue-700"
                   onClick={signOut}
                 >
-                  <LogOut className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
+                  <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </Button>
               </>
             ) : (
               <>
-                <NavButton to="/login" icon={LogIn}>
-                  Log in
-                </NavButton>
-                <NavButton to="/signup" icon={UserPlus} primary>
-                  Sign up
-                </NavButton>
+                <NavButton to="/login" icon={LogIn}>Log in</NavButton>
+                <NavButton to="/signup" icon={UserPlus} primary>Sign up</NavButton>
               </>
             )}
           </nav>
 
-          {/* Mobile Toggle Button */}
           <motion.button
-            className="md:hidden text-blue-600 p-2 rounded-lg hover:bg-blue-50/50 transition-colors"
+            className="md:hidden text-blue-600 p-2 rounded-lg hover:bg-blue-50/50"
             onClick={() => setIsMenuOpen(prev => !prev)}
-            aria-label="Toggle menu"
-            aria-expanded={isMenuOpen}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -140,62 +136,36 @@ const Navbar = () => {
           </motion.button>
         </div>
 
-        {/* Mobile Menu with Smooth Animation */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="md:hidden bg-white/95 backdrop-blur-lg border-t border-blue-100/50 overflow-hidden"
+              transition={{ duration: 0.3 }}
+              className="md:hidden bg-white/95 border-t border-blue-100/50"
             >
               <div className="container mx-auto px-4 py-4 flex flex-col space-y-3">
                 {user ? (
                   <>
-                    <NavButton 
-                      to={dashboardPath} 
-                      onClick={() => setIsMenuOpen(false)}
-                      icon={User}
-                    >
-                      Dashboard
-                    </NavButton>
-                    <NavButton 
-                      to="/profile" 
-                      onClick={() => setIsMenuOpen(false)}
-                      icon={User}
-                    >
-                      Profile
-                    </NavButton>
+                    <NavButton to={dashboardPath} onClick={() => setIsMenuOpen(false)} icon={User}>Dashboard</NavButton>
+                    <NavButton to="/profile" onClick={() => setIsMenuOpen(false)} icon={User}>Profile</NavButton>
                     <Button
                       variant="outline"
-                      className="w-full border-blue-500 text-blue-600 hover:bg-blue-50/50 hover:border-blue-600 hover:text-blue-700 transition-colors group justify-start"
+                      className="w-full border-blue-500 text-blue-600 hover:bg-blue-50/50"
                       onClick={() => {
                         signOut();
                         setIsMenuOpen(false);
                       }}
                     >
-                      <LogOut className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
+                      <LogOut className="mr-2 h-4 w-4" />
                       Log out
                     </Button>
                   </>
                 ) : (
                   <>
-                    <NavButton 
-                      to="/login" 
-                      onClick={() => setIsMenuOpen(false)}
-                      icon={LogIn}
-                    >
-                      Log in
-                    </NavButton>
-                    <NavButton 
-                      to="/signup" 
-                      onClick={() => setIsMenuOpen(false)}
-                      icon={UserPlus}
-                      primary
-                    >
-                      Sign up
-                    </NavButton>
+                    <NavButton to="/login" onClick={() => setIsMenuOpen(false)} icon={LogIn}>Log in</NavButton>
+                    <NavButton to="/signup" onClick={() => setIsMenuOpen(false)} icon={UserPlus} primary>Sign up</NavButton>
                   </>
                 )}
                 <SocialLinks />
