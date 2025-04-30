@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,13 +5,14 @@ import { toast } from "sonner";
 import { SignupFormInputs } from "./SignupFormInputs";
 import { SignupFormFooter } from "./SignupFormFooter";
 import { RoleSelector } from "./RoleSelector";
+import { Role } from "@/types/roles";  // 💥 Import Role type
 
 export const SignupForm = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("patient");
+  const [role, setRole] = useState<Role>("patient");  // 💥 typed state
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -28,29 +28,29 @@ export const SignupForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!fullName || !email || !password || !confirmPassword) {
       toast.error("Please fill in all required fields");
       return;
     }
-    
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
-    
+
     if (passwordStrength.score < 2) {
       toast.error("Please choose a stronger password");
       return;
     }
-    
+
     if (!termsAccepted) {
       toast.error("You must agree to the terms and privacy policy");
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       await signUp(email, password, { full_name: fullName, role: role });
       toast.success("Account created successfully! Verification email sent.");
@@ -81,9 +81,9 @@ export const SignupForm = () => {
         passwordStrength={passwordStrength}
         setPasswordStrength={setPasswordStrength}
       />
-      
+
       <RoleSelector role={role} setRole={setRole} />
-      
+
       <SignupFormFooter
         termsAccepted={termsAccepted}
         setTermsAccepted={setTermsAccepted}
