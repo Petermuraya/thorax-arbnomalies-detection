@@ -1,11 +1,11 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth, VALID_USER_ROLES } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { AdminSignupInputs } from "./AdminSignupInputs";
-import { PasswordStrengthIndicator } from "../shared/PasswordStrengthIndicator";
 import { Button } from "@/components/ui/button";
+import { Role, ROLES } from "@/types/roles";
 
 export const AdminSignupForm = () => {
   const [fullName, setFullName] = useState("");
@@ -39,13 +39,8 @@ export const AdminSignupForm = () => {
     setIsLoading(true);
     
     try {
-      // Ensure we're using the exact string value expected by the database
-      const role = "admin";
-      
-      // Verify the role is valid
-      if (!VALID_USER_ROLES.includes(role)) {
-        throw new Error(`Invalid role: ${role}`);
-      }
+      // Get the admin role directly from the ROLES constant to ensure consistency
+      const role: Role = "admin";
       
       console.log("Attempting admin registration with role:", role);
       
@@ -61,8 +56,8 @@ export const AdminSignupForm = () => {
       
       // Extract more specific error messages if available
       if (error.message) {
-        if (error.message.includes("role_check")) {
-          errorMessage = "Invalid role selection. This appears to be a database constraint issue. Check if 'admin' is an allowed role value.";
+        if (error.message.includes("role_check") || error.message.includes("profiles_role_check")) {
+          errorMessage = "Invalid role selection. The database constraint is rejecting the admin role value.";
         } else if (error.message.includes("User already registered")) {
           errorMessage = "This email is already registered. Please use a different email or login instead.";
         } else {

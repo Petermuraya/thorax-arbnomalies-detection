@@ -131,6 +131,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     console.log("Signing up with role:", metadata.role);
+    console.log("Valid roles are:", VALID_USER_ROLES);
+    console.log("Role is included in valid roles:", VALID_USER_ROLES.includes(metadata.role));
 
     const { error } = await supabase.auth.signUp({
       email,
