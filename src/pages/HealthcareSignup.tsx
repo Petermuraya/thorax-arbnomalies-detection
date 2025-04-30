@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
+import { Role } from "@/types/roles";
 
 const HealthcareSignup = () => {
   const { user } = useAuth();
@@ -29,7 +30,8 @@ const HealthcareSignup = () => {
 
   // Store role preference for Google sign-in
   useEffect(() => {
-    localStorage.setItem("signupRole", "healthstaff");
+    const healthstaffRole: Role = "healthstaff";
+    localStorage.setItem("signupRole", healthstaffRole);
     return () => {
       localStorage.removeItem("signupRole");
     };

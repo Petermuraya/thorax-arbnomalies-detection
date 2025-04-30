@@ -1,10 +1,11 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth, VALID_USER_ROLES } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SignupFormInputs } from "./SignupFormInputs";
 import { SignupFormFooter } from "./SignupFormFooter";
+import { Role } from "@/types/roles";
 
 export const HealthcareSignupForm = () => {
   const [fullName, setFullName] = useState("");
@@ -50,13 +51,10 @@ export const HealthcareSignupForm = () => {
     setIsLoading(true);
     
     try {
-      // Ensure we're using the exact string value expected by the database
-      const role = "healthstaff";
+      // Explicitly use the typed role to ensure it matches database constraints
+      const role: Role = "healthstaff";
       
-      // Verify the role is valid
-      if (!VALID_USER_ROLES.includes(role)) {
-        throw new Error(`Invalid role: ${role}`);
-      }
+      console.log("Signing up with role:", role);
       
       await signUp(email, password, { 
         full_name: fullName, 
@@ -72,7 +70,7 @@ export const HealthcareSignupForm = () => {
       // Extract more specific error messages if available
       if (error.message) {
         if (error.message.includes("role_check")) {
-          errorMessage = "Invalid role selection. This appears to be a database constraint issue.";
+          errorMessage = "Invalid role selection. There appears to be a database constraint issue.";
         } else if (error.message.includes("User already registered")) {
           errorMessage = "This email is already registered. Please use a different email or login instead.";
         } else {

@@ -4,16 +4,17 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Role, ROLES } from "@/types/roles";
 
 // Define valid roles as a constant to ensure consistency across the application
-export const VALID_USER_ROLES = ['patient', 'healthstaff', 'admin'] as const;
-export type UserRole = typeof VALID_USER_ROLES[number];
+export const VALID_USER_ROLES = ROLES;
+export type UserRole = Role;
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, metadata: { full_name: string; role: UserRole }) => Promise<void>;
+  signUp: (email: string, password: string, metadata: { full_name: string; role: Role }) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -45,14 +46,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               let role = currentSession.user.user_metadata?.role || 'patient';
               
               // Ensure role is valid to avoid database constraint issues
-              if (!VALID_USER_ROLES.includes(role as UserRole)) {
+              if (!VALID_USER_ROLES.includes(role as Role)) {
                 role = 'patient';
               }
               
               // If this is a new Google signup, check for stored role preference
               if (event === 'SIGNED_IN' && !currentSession.user.user_metadata?.role) {
                 const storedRole = localStorage.getItem("signupRole");
-                if (storedRole && VALID_USER_ROLES.includes(storedRole as UserRole)) {
+                if (storedRole && VALID_USER_ROLES.includes(storedRole as Role)) {
                   role = storedRole;
                   // Clear stored role
                   localStorage.removeItem("signupRole");
@@ -120,7 +121,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (error) throw error;
   };
 
-  const signUp = async (email: string, password: string, metadata: { full_name: string; role: UserRole }) => {
+  const signUp = async (email: string, password: string, metadata: { full_name: string; role: Role }) => {
     // Validate role to avoid database constraint errors
     if (!VALID_USER_ROLES.includes(metadata.role)) {
       throw new Error(`Invalid role: ${metadata.role}. Must be one of: ${VALID_USER_ROLES.join(', ')}`);
