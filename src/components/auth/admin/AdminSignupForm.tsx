@@ -39,8 +39,8 @@ export const AdminSignupForm = () => {
     setIsLoading(true);
     
     try {
-      // Get the admin role directly from the ROLES constant to ensure consistency
-      const role: Role = "admin";
+      // Using string literal instead of type to ensure exact match with database constraint
+      const role = "admin";
       
       console.log("Attempting admin registration with role:", role);
       

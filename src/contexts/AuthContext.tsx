@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, metadata: { full_name: string; role: Role }) => Promise<void>;
+  signUp: (email: string, password: string, metadata: { full_name: string; role: Role | string }) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -124,21 +123,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (error) throw error;
   };
 
-  const signUp = async (email: string, password: string, metadata: { full_name: string; role: Role }) => {
+  const signUp = async (email: string, password: string, metadata: { full_name: string; role: Role | string }) => {
     // Validate role to avoid database constraint errors
-    if (!VALID_USER_ROLES.includes(metadata.role)) {
-      throw new Error(`Invalid role: ${metadata.role}. Must be one of: ${VALID_USER_ROLES.join(', ')}`);
+    // Convert role to a string to ensure consistent type
+    const roleStr = String(metadata.role).toLowerCase();
+    
+    // Check if role is included in valid roles
+    if (!VALID_USER_ROLES.includes(roleStr as Role)) {
+      console.error(`Role '${roleStr}' is not in valid roles: [${VALID_USER_ROLES.join(', ')}]`);
+      throw new Error(`Invalid role: ${roleStr}. Must be one of: ${VALID_USER_ROLES.join(', ')}`);
     }
 
-    console.log("Signing up with role:", metadata.role);
+    console.log("Signing up with role:", roleStr);
     console.log("Valid roles are:", VALID_USER_ROLES);
-    console.log("Role is included in valid roles:", VALID_USER_ROLES.includes(metadata.role));
+    console.log("Role is included in valid roles:", VALID_USER_ROLES.includes(roleStr as Role));
+    
+    // Ensure we pass the role as a lowercase string to avoid any case-sensitivity issues
+    const finalMetadata = { 
+      ...metadata, 
+      role: roleStr 
+    };
+    
+    console.log("Final metadata being sent:", finalMetadata);
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: metadata,
+        data: finalMetadata,
         emailRedirectTo: `${window.location.origin}/login`,
       },
     });
