@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, VALID_USER_ROLES } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SignupFormInputs } from "./SignupFormInputs";
 import { SignupFormFooter } from "./SignupFormFooter";
@@ -50,15 +50,37 @@ export const HealthcareSignupForm = () => {
     setIsLoading(true);
     
     try {
+      // Ensure we're using the exact string value expected by the database
+      const role = "healthstaff";
+      
+      // Verify the role is valid
+      if (!VALID_USER_ROLES.includes(role)) {
+        throw new Error(`Invalid role: ${role}`);
+      }
+      
       await signUp(email, password, { 
         full_name: fullName, 
-        role: 'healthstaff'  // Ensure this matches the allowed value in the database
+        role: role
       });
-      toast.success("Account created successfully! Verification email sent.");
+      toast.success("Healthcare account created successfully! Verification email sent.");
       navigate("/login");
     } catch (error: any) {
       console.error("Registration error:", error);
-      toast.error(error.message || "Registration failed. Please try again.");
+      
+      let errorMessage = "Registration failed. Please try again.";
+      
+      // Extract more specific error messages if available
+      if (error.message) {
+        if (error.message.includes("role_check")) {
+          errorMessage = "Invalid role selection. This appears to be a database constraint issue.";
+        } else if (error.message.includes("User already registered")) {
+          errorMessage = "This email is already registered. Please use a different email or login instead.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

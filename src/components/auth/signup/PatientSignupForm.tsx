@@ -1,12 +1,10 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, VALID_USER_ROLES } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SignupFormInputs } from "./SignupFormInputs";
 import { SignupFormFooter } from "./SignupFormFooter";
-import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
 
 export const PatientSignupForm = () => {
   const [fullName, setFullName] = useState("");
@@ -52,9 +50,17 @@ export const PatientSignupForm = () => {
     setIsLoading(true);
     
     try {
+      // Ensure we're using the exact string value expected by the database
+      const role = "patient";
+      
+      // Verify the role is valid
+      if (!VALID_USER_ROLES.includes(role)) {
+        throw new Error(`Invalid role: ${role}`);
+      }
+      
       await signUp(email, password, { 
         full_name: fullName, 
-        role: 'patient'  // Ensure this matches the allowed value in the database
+        role: role
       });
       toast.success("Account created successfully! Verification email sent.");
       navigate("/login");

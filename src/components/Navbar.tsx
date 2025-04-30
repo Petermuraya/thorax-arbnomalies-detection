@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -11,7 +12,7 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const { userRole } = useRolePermissions();
 
-  const handleDashboardClick = () => {
+  const getDashboardPath = () => {
     if (userRole === 'admin') {
       return '/admin-dashboard';
     } else if (userRole === 'healthstaff') {
@@ -39,7 +40,7 @@ const Navbar = () => {
           {/* Main Navigation */}
           {user && (
             <div className="hidden md:flex items-center space-x-4">
-              <Link to={handleDashboardClick()}>
+              <Link to={getDashboardPath()}>
                 <Button variant="outline" className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
                   Dashboard
                 </Button>
@@ -90,7 +91,7 @@ const Navbar = () => {
             <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
               {user ? (
                 <>
-                  <Link to={handleDashboardClick()} onClick={() => setIsMenuOpen(false)}>
+                  <Link to={getDashboardPath()} onClick={() => setIsMenuOpen(false)}>
                     <Button variant="outline" className="w-full border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
                       Dashboard
                     </Button>

@@ -1,10 +1,11 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, VALID_USER_ROLES } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { AdminSignupInputs } from "./AdminSignupInputs";
 import { PasswordStrengthIndicator } from "../shared/PasswordStrengthIndicator";
+import { Button } from "@/components/ui/button";
 
 export const AdminSignupForm = () => {
   const [fullName, setFullName] = useState("");
@@ -38,9 +39,19 @@ export const AdminSignupForm = () => {
     setIsLoading(true);
     
     try {
+      // Ensure we're using the exact string value expected by the database
+      const role = "admin";
+      
+      // Verify the role is valid
+      if (!VALID_USER_ROLES.includes(role)) {
+        throw new Error(`Invalid role: ${role}`);
+      }
+      
+      console.log("Attempting admin registration with role:", role);
+      
       await signUp(email, password, { 
         full_name: fullName, 
-        role: 'admin' 
+        role: role
       });
       toast.success("Admin account created successfully! Verification email sent.");
       navigate("/login");
@@ -51,7 +62,7 @@ export const AdminSignupForm = () => {
       // Extract more specific error messages if available
       if (error.message) {
         if (error.message.includes("role_check")) {
-          errorMessage = "Invalid role selection. Please contact the system administrator.";
+          errorMessage = "Invalid role selection. This appears to be a database constraint issue. Check if 'admin' is an allowed role value.";
         } else if (error.message.includes("User already registered")) {
           errorMessage = "This email is already registered. Please use a different email or login instead.";
         } else {
@@ -79,13 +90,14 @@ export const AdminSignupForm = () => {
         adminKey={adminKey}
         setAdminKey={setAdminKey}
       />
-      <button 
+      
+      <Button 
         type="submit" 
         className="w-full bg-medical-blue hover:bg-medical-blue-dark flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md text-white"
         disabled={isLoading}
       >
         {isLoading ? "Creating account..." : "Create Admin Account"}
-      </button>
+      </Button>
     </form>
   );
 };

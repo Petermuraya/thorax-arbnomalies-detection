@@ -6,6 +6,8 @@ import { HealthcareSignupForm } from "@/components/auth/signup/HealthcareSignupF
 import { GoogleSignupButton } from "@/components/auth/signup/GoogleSignupButton";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 const HealthcareSignup = () => {
   const { user } = useAuth();
@@ -17,11 +19,21 @@ const HealthcareSignup = () => {
       const role = user.user_metadata?.role || 'patient';
       if (role === 'patient') {
         navigate('/patient-dashboard');
+      } else if (role === 'admin') {
+        navigate('/admin-dashboard');
       } else {
         navigate('/health-staff-dashboard');
       }
     }
   }, [user, navigate]);
+
+  // Store role preference for Google sign-in
+  useEffect(() => {
+    localStorage.setItem("signupRole", "healthstaff");
+    return () => {
+      localStorage.removeItem("signupRole");
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -33,6 +45,14 @@ const HealthcareSignup = () => {
             <h1 className="text-3xl font-bold text-medical-gray-dark mb-2">Healthcare Professional Registration</h1>
             <p className="text-medical-gray">Join our platform to review and analyze x-rays</p>
           </div>
+          
+          <Alert className="mb-6 bg-blue-50 border-blue-200">
+            <InfoIcon className="h-4 w-4 text-blue-600" />
+            <AlertTitle className="text-blue-800">Healthcare Verification Required</AlertTitle>
+            <AlertDescription className="text-blue-700">
+              After signing up, you'll need to verify your healthcare credentials by providing your license information.
+            </AlertDescription>
+          </Alert>
           
           <div className="medical-card p-8 mb-6 shadow-lg border border-gray-100 rounded-xl">
             <HealthcareSignupForm />
