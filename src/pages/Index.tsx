@@ -149,6 +149,102 @@ const Index = () => {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-16 md:py-24 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-medical-gray-dark mb-4">
+              How PulmoScan AI Works
+            </h2>
+            <p className="text-lg text-medical-gray max-w-2xl mx-auto">
+              Our streamlined process delivers accurate results in minutes, not days.
+            </p>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Step 1 */}
+            <div className="flex-1 relative group">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full transform group-hover:-translate-y-2 transition-transform">
+                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-medical-blue flex items-center justify-center text-white font-bold text-lg shadow-md">
+                  1
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-medical-gray-dark pt-2">Upload Digital X-ray</h3>
+                <p className="text-medical-gray mb-4">
+                  Securely upload DICOM or JPEG images through our HIPAA-compliant platform.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <img 
+                    src="https://images.unsplash.com/photo-1581595219315-a187dd40c322?q=80&w=400&auto=format&fit=crop" 
+                    alt="Upload X-ray" 
+                    className="rounded-md w-full h-40 object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex-1 relative group">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full transform group-hover:-translate-y-2 transition-transform">
+                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-medical-teal flex items-center justify-center text-white font-bold text-lg shadow-md">
+                  2
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-medical-gray-dark pt-2">AI Processing</h3>
+                <p className="text-medical-gray mb-4">
+                  Our convolutional neural networks analyze the image across multiple detection layers.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <img 
+                    src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=400&auto=format&fit=crop" 
+                    alt="AI Analysis" 
+                    className="rounded-md w-full h-40 object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex-1 relative group">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full transform group-hover:-translate-y-2 transition-transform">
+                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-medical-purple flex items-center justify-center text-white font-bold text-lg shadow-md">
+                  3
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-medical-gray-dark pt-2">Clinical Validation</h3>
+                <p className="text-medical-gray mb-4">
+                  Results are reviewed by our medical team and graded by confidence levels.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <img 
+                    src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=400&auto=format&fit=crop" 
+                    alt="Expert Review" 
+                    className="rounded-md w-full h-40 object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="flex-1 relative group">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full transform group-hover:-translate-y-2 transition-transform">
+                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-medical-green flex items-center justify-center text-white font-bold text-lg shadow-md">
+                  4
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-medical-gray-dark pt-2">Detailed Report</h3>
+                <p className="text-medical-gray mb-4">
+                  Receive a comprehensive PDF report with annotated images and clinical recommendations.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <img 
+                    src="https://images.unsplash.com/photo-1581595214962-0ec4c5e30c7b?q=80&w=400&auto=format&fit=crop" 
+                    alt="Get Results" 
+                    className="rounded-md w-full h-40 object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
