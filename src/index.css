@@ -1,7 +1,4 @@
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @layer base {
   :root {
@@ -85,72 +82,6 @@
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
 
-  body {
-    @apply bg-background text-foreground;
-  }
-}
 
-@layer components {
-  .medical-card {
-    @apply bg-white border border-medical-gray-light rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300;
-  }
-  
-  .hero-gradient {
-    @apply bg-gradient-to-br from-medical-blue-light to-medical-teal-dark;
-  }
-  
-  .btn-primary {
-    @apply bg-medical-blue hover:bg-medical-blue-dark text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
-  }
-  
-  .btn-secondary {
-    @apply bg-medical-teal hover:bg-medical-teal-dark text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
-  }
-  
-  .btn-outline {
-    @apply border border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
-  }
-  
-  .input-field {
-    @apply block w-full rounded-md border border-medical-gray-light bg-white px-4 py-3 text-sm placeholder:text-medical-gray focus:border-medical-blue focus:outline-none;
-  }
-  
-  .label-text {
-    @apply text-sm font-medium text-medical-gray-dark mb-1;
-  }
-  
-  .form-error {
-    @apply text-destructive text-xs mt-1;
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0) translateX(0); }
-    50% { transform: translateY(-20px) translateX(10px); }
-  }
-  
-  @keyframes float-slow {
-    0%, 100% { transform: translateY(0) translateX(0); }
-    50% { transform: translateY(10px) translateX(-15px); }
-  }
-  
-  @keyframes bounce-horizontal {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(5px); }
-  }
-  
-  .animate-float {
-    animation: float 8s ease-in-out infinite;
-  }
-  
-  .animate-float-slow {
-    animation: float-slow 10s ease-in-out infinite;
-  }
-  
-  .animate-bounce-horizontal {
-    animation: bounce-horizontal 2s ease-in-out infinite;
-  }
-}
+
