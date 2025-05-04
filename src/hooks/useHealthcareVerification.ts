@@ -37,7 +37,7 @@ export const useHealthcareVerification = () => {
         if (data) {
           setVerification(data as HealthcareVerification);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching verification:', error);
       } finally {
         setLoading(false);
@@ -54,19 +54,28 @@ export const useHealthcareVerification = () => {
     }
 
     try {
+      // First, ensure the healthcare-docs bucket exists (this is handled by backend)
+      
+      // Create a unique file path
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      const filePath = `${user.id}/${fileName}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
+      console.log('Uploading file to:', filePath);
+      
+      // Upload the file to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('healthcare-docs')
-        .upload(filePath, file, {
-          metadata: {
-            user_id: user.id
-          }
-        });
+        .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`File upload failed: ${uploadError.message}`);
+      }
 
+      console.log('File uploaded successfully:', uploadData);
+      
+      // Insert verification record in the database
       const { data, error: insertError } = await supabase
         .from('healthcare_verification')
         .insert({
@@ -79,14 +88,17 @@ export const useHealthcareVerification = () => {
         .select()
         .single();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        throw new Error(`Database record failed: ${insertError.message}`);
+      }
 
       setVerification(data as HealthcareVerification);
       toast.success('Verification documents submitted successfully');
       return data as HealthcareVerification;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting verification:', error);
-      toast.error('Failed to submit verification documents');
+      toast.error(`Failed to submit verification documents: ${error.message}`);
       return null;
     }
   };

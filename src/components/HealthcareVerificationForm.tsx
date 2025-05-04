@@ -7,23 +7,61 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useHealthcareVerification } from '@/hooks/useHealthcareVerification';
 import { Upload } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const HealthcareVerificationForm = () => {
   const [file, setFile] = useState<File | null>(null);
   const [licenseNumber, setLicenseNumber] = useState('');
   const [specialization, setSpecialization] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { verification, submitVerification } = useHealthcareVerification();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFile = e.target.files[0];
+      // Validate file size (max 10MB)
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setError('File size exceeds 10MB limit');
+        return;
+      }
+      setFile(selectedFile);
+      setError(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !licenseNumber || !specialization) {
+    setError(null);
+    
+    if (!file) {
+      setError('Please select a document to upload');
+      return;
+    }
+    
+    if (!licenseNumber) {
+      setError('Please enter your license number');
+      return;
+    }
+    
+    if (!specialization) {
+      setError('Please select your specialization');
       return;
     }
 
     setIsSubmitting(true);
-    await submitVerification(file, licenseNumber, specialization);
-    setIsSubmitting(false);
+    
+    try {
+      const result = await submitVerification(file, licenseNumber, specialization);
+      if (!result) {
+        setError('Verification submission failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Form submission error:', err);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (verification) {
@@ -57,6 +95,12 @@ const HealthcareVerificationForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="license">License Number</Label>
@@ -65,12 +109,13 @@ const HealthcareVerificationForm = () => {
               value={licenseNumber}
               onChange={(e) => setLicenseNumber(e.target.value)}
               required
+              disabled={isSubmitting}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="specialization">Specialization</Label>
-            <Select onValueChange={setSpecialization} required>
+            <Select onValueChange={setSpecialization} disabled={isSubmitting}>
               <SelectTrigger>
                 <SelectValue placeholder="Select your specialization" />
               </SelectTrigger>
@@ -78,6 +123,7 @@ const HealthcareVerificationForm = () => {
                 <SelectItem value="radiologist">Radiologist</SelectItem>
                 <SelectItem value="pulmonologist">Pulmonologist</SelectItem>
                 <SelectItem value="general_practitioner">General Practitioner</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -90,7 +136,8 @@ const HealthcareVerificationForm = () => {
                 type="file"
                 className="hidden"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => e.target.files && setFile(e.target.files[0])}
+                onChange={handleFileChange}
+                disabled={isSubmitting}
               />
               {file ? (
                 <div className="space-y-2">
@@ -99,6 +146,7 @@ const HealthcareVerificationForm = () => {
                     type="button" 
                     variant="outline"
                     onClick={() => setFile(null)}
+                    disabled={isSubmitting}
                   >
                     Change File
                   </Button>
@@ -108,18 +156,22 @@ const HealthcareVerificationForm = () => {
                   type="button"
                   variant="outline"
                   onClick={() => document.getElementById('document')?.click()}
+                  disabled={isSubmitting}
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   Upload Document
                 </Button>
               )}
+              <p className="text-xs text-gray-500 mt-2">
+                Upload your medical license or certification (PDF, JPG, PNG, max 10MB)
+              </p>
             </div>
           </div>
 
           <Button 
             type="submit" 
             className="w-full"
-            disabled={!file || !licenseNumber || !specialization || isSubmitting}
+            disabled={isSubmitting}
           >
             {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
           </Button>
