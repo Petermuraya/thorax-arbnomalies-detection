@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -65,15 +64,6 @@ const SocialLinks = () => {
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { userRoles, isAdmin, isHealthStaff, isPatient } = useRolePermissions();
-
-  // Determine dashboard path based on user roles
-  let dashboardPath = '/patient-dashboard';
-  if (isAdmin) {
-    dashboardPath = '/admin-dashboard';
-  } else if (isHealthStaff) {
-    dashboardPath = '/health-staff-dashboard';
-  }
 
   return (
     <TooltipProvider>
@@ -110,7 +100,9 @@ const Navbar = () => {
           <nav className="hidden md:flex items-center space-x-3">
             {user ? (
               <>
-                <NavButton to={dashboardPath} icon={User}>Dashboard</NavButton>
+                <NavButton to="/admin-dashboard" icon={User}>Admin Dashboard</NavButton>
+                <NavButton to="/health-staff-dashboard" icon={User}>Health Staff Dashboard</NavButton>
+                <NavButton to="/patient-dashboard" icon={User}>Patient Dashboard</NavButton>
                 <NavButton to="/profile" icon={User}>Profile</NavButton>
                 <Button
                   variant="outline"
@@ -151,7 +143,9 @@ const Navbar = () => {
               <div className="container mx-auto px-4 py-4 flex flex-col space-y-3">
                 {user ? (
                   <>
-                    <NavButton to={dashboardPath} onClick={() => setIsMenuOpen(false)} icon={User}>Dashboard</NavButton>
+                    <NavButton to="/admin-dashboard" onClick={() => setIsMenuOpen(false)} icon={User}>Admin Dashboard</NavButton>
+                    <NavButton to="/health-staff-dashboard" onClick={() => setIsMenuOpen(false)} icon={User}>Health Staff Dashboard</NavButton>
+                    <NavButton to="/patient-dashboard" onClick={() => setIsMenuOpen(false)} icon={User}>Patient Dashboard</NavButton>
                     <NavButton to="/profile" onClick={() => setIsMenuOpen(false)} icon={User}>Profile</NavButton>
                     <Button
                       variant="outline"

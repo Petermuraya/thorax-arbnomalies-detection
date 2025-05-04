@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,11 +41,6 @@ const HealthStaffDashboard = () => {
       navigate('/login');
       return;
     }
-
-    if (user.user_metadata?.role !== 'healthstaff') {
-      toast.error('Access denied. This page is for healthcare professionals only.');
-      navigate('/');
-    }
   }, [user, navigate]);
 
   // Show loading state while verification status is being determined
@@ -61,7 +55,7 @@ const HealthStaffDashboard = () => {
     );
   }
 
-  // If not verified or pending verification
+  // If not verified or pending verification, still show verification form
   if (!verification || verification.status !== 'approved') {
     return (
       <div className="min-h-screen bg-gray-50">

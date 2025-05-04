@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,20 +48,13 @@ const AdminDashboard = () => {
     rejectedVerifications: 0
   });
 
-  // Check if user is admin
+  // Check if user is authenticated
   useEffect(() => {
     if (!user) {
       navigate('/login');
       return;
     }
-
-    // Check if user has admin role
-    if (user.user_metadata?.role !== 'admin') {
-      toast.error('Access denied. This page is for administrators only.');
-      navigate('/');
-    } else {
-      fetchData();
-    }
+    fetchData();
   }, [user, navigate]);
 
   const fetchData = async () => {
