@@ -6,14 +6,14 @@ import { toast } from "sonner";
 import { SignupFormInputs } from "./SignupFormInputs";
 import { SignupFormFooter } from "./SignupFormFooter";
 import { RoleSelector } from "./RoleSelector";
-import { Role } from "@/types/roles";
+import { Role, UserRoles } from "@/types/roles";
 
 export const SignupForm = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<Role>("patient");
+  const [selectedRoles, setSelectedRoles] = useState<UserRoles>({ patient: true });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -26,6 +26,13 @@ export const SignupForm = () => {
     label: "Weak",
     color: "bg-red-500"
   });
+
+  const handleRoleChange = (role: Role, checked: boolean) => {
+    setSelectedRoles(prev => ({
+      ...prev,
+      [role]: checked
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +62,7 @@ export const SignupForm = () => {
     try {
       await signUp(email, password, { 
         full_name: fullName, 
-        role: role 
+        roles: selectedRoles
       });
       toast.success("Account created successfully! Verification email sent.");
       navigate("/login");
@@ -97,7 +104,10 @@ export const SignupForm = () => {
         setPasswordStrength={setPasswordStrength}
       />
       
-      <RoleSelector role={role} setRole={setRole} />
+      <RoleSelector 
+        selectedRoles={selectedRoles} 
+        onRoleChange={handleRoleChange} 
+      />
       
       <SignupFormFooter
         termsAccepted={termsAccepted}

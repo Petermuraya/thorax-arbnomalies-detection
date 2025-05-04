@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -64,13 +65,15 @@ const SocialLinks = () => {
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { userRole } = useRolePermissions();
+  const { userRoles, isAdmin, isHealthStaff, isPatient } = useRolePermissions();
 
-  const dashboardPath = {
-    admin: '/admin-dashboard',
-    healthstaff: '/health-staff-dashboard',
-    patient: '/patient-dashboard',
-  }[userRole] || '/patient-dashboard';
+  // Determine dashboard path based on user roles
+  let dashboardPath = '/patient-dashboard';
+  if (isAdmin) {
+    dashboardPath = '/admin-dashboard';
+  } else if (isHealthStaff) {
+    dashboardPath = '/health-staff-dashboard';
+  }
 
   return (
     <TooltipProvider>
