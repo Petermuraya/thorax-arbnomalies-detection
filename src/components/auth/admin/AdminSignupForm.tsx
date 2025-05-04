@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { AdminSignupInputs } from "./AdminSignupInputs";
 import { Button } from "@/components/ui/button";
-import { Role, ROLES } from "@/types/roles";
 
 export const AdminSignupForm = () => {
   const [fullName, setFullName] = useState("");
@@ -20,7 +19,7 @@ export const AdminSignupForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!fullName || !email || !password || !confirmPassword || !adminKey) {
+    if (!fullName || !email || !password || !confirmPassword) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -30,16 +29,11 @@ export const AdminSignupForm = () => {
       return;
     }
     
-    const validAdminKey = "admin123"; // In production, this should be securely stored
-    if (adminKey !== validAdminKey) {
-      toast.error("Invalid admin key");
-      return;
-    }
+    // Remove admin key validation
     
     setIsLoading(true);
     
     try {
-      // Using string literal instead of type to ensure exact match with database constraint
       const role = "admin";
       
       console.log("Attempting admin registration with role:", role);
@@ -48,13 +42,15 @@ export const AdminSignupForm = () => {
         full_name: fullName, 
         role: role
       });
-      toast.success("Admin account created successfully! Verification email sent.");
-      navigate("/login");
+      
+      toast.success("Admin account created successfully!");
+      
+      // Direct redirect to admin dashboard instead of login page
+      navigate("/admin-dashboard");
     } catch (error: any) {
       console.error("Registration error:", error);
       let errorMessage = "Registration failed. Please try again.";
       
-      // Extract more specific error messages if available
       if (error.message) {
         if (error.message.includes("role_check") || error.message.includes("profiles_role_check")) {
           errorMessage = "Invalid role selection. The database constraint is rejecting the admin role value.";
