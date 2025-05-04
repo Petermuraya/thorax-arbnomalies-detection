@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SignupFormInputs } from "./SignupFormInputs";
 import { SignupFormFooter } from "./SignupFormFooter";
-import { Role } from "@/types/roles";
+import { Role, UserRoles } from "@/types/roles";
 
 export const HealthcareSignupForm = () => {
   const [fullName, setFullName] = useState("");
@@ -51,14 +51,18 @@ export const HealthcareSignupForm = () => {
     setIsLoading(true);
     
     try {
-      // Explicitly use the typed role to ensure it matches database constraints
-      const role: Role = "healthstaff";
+      // Create user roles object with healthstaff role
+      // Healthcare professionals can also be patients
+      const roles: UserRoles = {
+        healthstaff: true,
+        patient: true
+      };
       
-      console.log("Signing up with role:", role);
+      console.log("Signing up with roles:", roles);
       
       await signUp(email, password, { 
         full_name: fullName, 
-        role: role
+        roles: roles
       });
       toast.success("Healthcare account created successfully! Verification email sent.");
       navigate("/login");

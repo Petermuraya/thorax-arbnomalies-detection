@@ -1,25 +1,36 @@
 
 import { useAuth } from "@/contexts/AuthContext";
+import { Role, UserRoles, hasRole } from "@/types/roles";
 
 export const useRolePermissions = () => {
   const { user } = useAuth();
-  const userRole = user?.user_metadata?.role || 'patient';
+  
+  // Get roles from user metadata
+  let userRoles: UserRoles = {};
+  
+  if (user?.user_metadata?.roles) {
+    // If user has roles object in metadata, use it
+    userRoles = user.user_metadata.roles as UserRoles;
+  } else if (user?.user_metadata?.role) {
+    // For backward compatibility - convert single role to roles object
+    const legacyRole = user.user_metadata.role as Role;
+    userRoles = { [legacyRole]: true };
+  }
 
   // If the user is a superuser, they have all permissions
-  const isSuperuser = userRole === 'superuser';
+  const isSuperuser = hasRole(userRoles, 'superuser');
 
-  // Make sure we're using consistent role values that match the database constraint
-  // 'patient', 'healthstaff', 'admin', and 'superuser' should be the exact values used in the database
-  const canVerifyHealthStaff = isSuperuser || userRole === 'admin';
-  const canReviewXrays = isSuperuser || ['healthstaff', 'admin'].includes(userRole);
-  const canUploadXrays = isSuperuser || ['patient', 'admin'].includes(userRole);
-  const canManageUsers = isSuperuser || userRole === 'admin';
-  const canAccessAdminDashboard = isSuperuser || userRole === 'admin';
-  const canAccessHealthStaffDashboard = isSuperuser || ['healthstaff', 'admin'].includes(userRole);
-  const canAccessPatientDashboard = isSuperuser || ['patient', 'admin'].includes(userRole);
+  // Permission checks based on roles
+  const canVerifyHealthStaff = isSuperuser || hasRole(userRoles, 'admin');
+  const canReviewXrays = isSuperuser || hasRole(userRoles, 'healthstaff') || hasRole(userRoles, 'admin');
+  const canUploadXrays = isSuperuser || hasRole(userRoles, 'patient') || hasRole(userRoles, 'admin');
+  const canManageUsers = isSuperuser || hasRole(userRoles, 'admin');
+  const canAccessAdminDashboard = isSuperuser || hasRole(userRoles, 'admin');
+  const canAccessHealthStaffDashboard = isSuperuser || hasRole(userRoles, 'healthstaff') || hasRole(userRoles, 'admin');
+  const canAccessPatientDashboard = isSuperuser || hasRole(userRoles, 'patient') || hasRole(userRoles, 'admin');
 
   return {
-    userRole,
+    userRoles,
     canVerifyHealthStaff,
     canReviewXrays,
     canUploadXrays,
@@ -27,9 +38,9 @@ export const useRolePermissions = () => {
     canAccessAdminDashboard,
     canAccessHealthStaffDashboard,
     canAccessPatientDashboard,
-    isAdmin: isSuperuser || userRole === 'admin',
-    isHealthStaff: isSuperuser || userRole === 'healthstaff',
-    isPatient: isSuperuser || userRole === 'patient',
+    isAdmin: isSuperuser || hasRole(userRoles, 'admin'),
+    isHealthStaff: isSuperuser || hasRole(userRoles, 'healthstaff'),
+    isPatient: isSuperuser || hasRole(userRoles, 'patient'),
     isSuperuser
   };
 };

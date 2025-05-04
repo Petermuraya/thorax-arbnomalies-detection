@@ -1,23 +1,24 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Role, ROLES } from "@/types/roles";
+import { Role, ROLES, UserRoles, arrayToRoles } from "@/types/roles";
 
 // Define valid roles as a constant to ensure consistency across the application
 export const VALID_USER_ROLES = ROLES;
-export type UserRole = Role;
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, metadata: { full_name: string; role: Role | string }) => Promise<void>;
+  signUp: (email: string, password: string, metadata: { full_name: string; roles?: UserRoles; role?: Role }) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
   resetPassword: (email: string) => Promise<void>;
+  updateUserRoles: (roles: UserRoles) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,41 +43,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setTimeout(() => {
             // Check if user has metadata, if not (Google sign-in) fetch from profiles table
             if (currentSession?.user) {
-              let role = currentSession.user.user_metadata?.role || 'patient';
+              // Check for roles or legacy role in metadata
+              let userRoles: UserRoles = {};
               
-              // Ensure role is valid to avoid database constraint issues
-              if (!VALID_USER_ROLES.includes(role as Role)) {
-                role = 'patient';
+              if (currentSession.user.user_metadata?.roles) {
+                userRoles = currentSession.user.user_metadata.roles as UserRoles;
+              } else if (currentSession.user.user_metadata?.role) {
+                const legacyRole = currentSession.user.user_metadata.role as Role;
+                if (VALID_USER_ROLES.includes(legacyRole)) {
+                  userRoles = { [legacyRole]: true };
+                }
               }
               
               // If this is a new Google signup, check for stored role preference
-              if (event === 'SIGNED_IN' && !currentSession.user.user_metadata?.role) {
+              if (event === 'SIGNED_IN' && !currentSession.user.user_metadata?.roles && !currentSession.user.user_metadata?.role) {
                 const storedRole = localStorage.getItem("signupRole");
                 if (storedRole && VALID_USER_ROLES.includes(storedRole as Role)) {
-                  role = storedRole;
+                  userRoles = { [storedRole as Role]: true };
                   // Clear stored role
                   localStorage.removeItem("signupRole");
                   
                   // Update user metadata with the selected role
                   supabase.auth.updateUser({
-                    data: { role: storedRole }
+                    data: { roles: userRoles }
                   }).catch(error => {
-                    console.error("Error updating user role:", error);
+                    console.error("Error updating user roles:", error);
                   });
                 }
               }
               
               toast.success(`Welcome back, ${currentSession.user.user_metadata?.full_name || currentSession.user.email}`);
               
-              // Handle superuser navigation
-              if (role === 'superuser') {
-                navigate('/admin-dashboard'); // Superusers default to admin dashboard
-              } else if (role === 'admin') {
+              // Navigate based on roles priority
+              if (userRoles.superuser) {
                 navigate('/admin-dashboard');
-              } else if (role === 'patient') {
-                navigate('/patient-dashboard');
-              } else {
+              } else if (userRoles.admin) {
+                navigate('/admin-dashboard');
+              } else if (userRoles.healthstaff) {
                 navigate('/health-staff-dashboard');
+              } else {
+                navigate('/patient-dashboard');
               }
             }
           }, 0);
@@ -123,26 +129,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (error) throw error;
   };
 
-  const signUp = async (email: string, password: string, metadata: { full_name: string; role: Role | string }) => {
-    // Validate role to avoid database constraint errors
-    // Convert role to a string to ensure consistent type
-    const roleStr = String(metadata.role).toLowerCase();
+  const signUp = async (email: string, password: string, metadata: { full_name: string; roles?: UserRoles; role?: Role }) => {
+    // Convert legacy role to roles object if needed
+    let userRoles: UserRoles = {};
     
-    // Check if role is included in valid roles
-    if (!VALID_USER_ROLES.includes(roleStr as Role)) {
-      console.error(`Role '${roleStr}' is not in valid roles: [${VALID_USER_ROLES.join(', ')}]`);
-      throw new Error(`Invalid role: ${roleStr}. Must be one of: ${VALID_USER_ROLES.join(', ')}`);
+    if (metadata.roles) {
+      userRoles = metadata.roles;
+    } else if (metadata.role) {
+      if (VALID_USER_ROLES.includes(metadata.role)) {
+        userRoles = { [metadata.role]: true };
+      } else {
+        console.error(`Role '${metadata.role}' is not valid`);
+        throw new Error(`Invalid role: ${metadata.role}. Must be one of: ${VALID_USER_ROLES.join(', ')}`);
+      }
+    } else {
+      // Default to patient if no role specified
+      userRoles = { patient: true };
     }
-
-    console.log("Signing up with role:", roleStr);
-    console.log("Valid roles are:", VALID_USER_ROLES);
-    console.log("Role is included in valid roles:", VALID_USER_ROLES.includes(roleStr as Role));
     
-    // Ensure we pass the role as a lowercase string to avoid any case-sensitivity issues
+    console.log("Signing up with roles:", userRoles);
+    
+    // Final metadata with roles
     const finalMetadata = { 
-      ...metadata, 
-      role: roleStr 
+      ...metadata,
+      roles: userRoles
     };
+    
+    // Remove legacy role if it exists
+    if (finalMetadata.role) {
+      delete finalMetadata.role;
+    }
     
     console.log("Final metadata being sent:", finalMetadata);
 
@@ -174,6 +190,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (error) throw error;
   };
 
+  const updateUserRoles = async (roles: UserRoles) => {
+    const { error } = await supabase.auth.updateUser({
+      data: { roles }
+    });
+
+    if (error) {
+      console.error("Error updating user roles:", error);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -183,7 +210,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signInWithGoogle,
       signOut, 
       loading,
-      resetPassword
+      resetPassword,
+      updateUserRoles
     }}>
       {children}
     </AuthContext.Provider>
