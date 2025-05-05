@@ -44,11 +44,11 @@ const App = () => (
           {/* Superuser Creation */}
           <Route path="/create-superuser" element={<SuperuserCreation />} />
           
-          {/* Protected routes - any authenticated user can access any dashboard */}
+          {/* Protected routes with role-based access */}
           <Route 
             path="/patient-dashboard" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredPermission="patient">
                 <PatientDashboard />
               </ProtectedRoute>
             } 
@@ -57,7 +57,7 @@ const App = () => (
           <Route 
             path="/health-staff-dashboard" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredPermission="healthstaff">
                 <HealthStaffDashboard />
               </ProtectedRoute>
             } 
@@ -66,7 +66,7 @@ const App = () => (
           <Route 
             path="/admin-dashboard" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredPermission="admin">
                 <AdminDashboard />
               </ProtectedRoute>
             } 

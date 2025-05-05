@@ -1,18 +1,22 @@
 
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   redirectPath?: string;
+  requiredPermission?: 'admin' | 'healthstaff' | 'patient' | null;
 }
 
 export const ProtectedRoute = ({ 
   children, 
-  redirectPath = "/login"
+  redirectPath = "/login",
+  requiredPermission = null
 }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
+  const { isSuperuser, isAdmin, isHealthStaff, isPatient } = useRolePermissions();
   const location = useLocation();
 
   // Show loading state while authenticating
@@ -29,6 +33,24 @@ export const ProtectedRoute = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If user is authenticated, allow access to the route
+  // For superusers, always allow access to any route
+  if (isSuperuser) {
+    return <>{children}</>;
+  }
+  
+  // Check permissions if a specific permission is required
+  if (requiredPermission) {
+    const hasPermission = 
+      (requiredPermission === 'admin' && isAdmin) ||
+      (requiredPermission === 'healthstaff' && isHealthStaff) ||
+      (requiredPermission === 'patient' && isPatient);
+    
+    if (!hasPermission) {
+      toast.error("You don't have permission to access this page");
+      return <Navigate to="/profile" replace />;
+    }
+  }
+
+  // If user is authenticated and has required permissions, allow access to the route
   return <>{children}</>;
 };
