@@ -8,3 +8,11 @@ export const getImageUrl = async (path: string) => {
   
   return data.publicUrl;
 };
+
+export const getHealthcareDocUrl = async (path: string) => {
+  const { data } = await supabase.storage
+    .from('healthcare-docs')
+    .getPublicUrl(path);
+  
+  return data.publicUrl;
+};

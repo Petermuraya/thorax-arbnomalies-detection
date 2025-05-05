@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { getImageUrl } from '@/utils/storage';
 
 export interface HealthcareVerification {
   id: string;
@@ -19,6 +20,7 @@ export interface HealthcareVerification {
 
 export const useHealthcareVerification = () => {
   const [verification, setVerification] = useState<HealthcareVerification | null>(null);
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -36,6 +38,16 @@ export const useHealthcareVerification = () => {
         if (error && error.code !== 'PGRST116') throw error;
         if (data) {
           setVerification(data as HealthcareVerification);
+          
+          // Try to get the document URL if we have a path
+          if (data.document_path) {
+            try {
+              const url = await getDocumentUrl(data.document_path);
+              setDocumentUrl(url);
+            } catch (urlError) {
+              console.error('Error fetching document URL:', urlError);
+            }
+          }
         }
       } catch (error: any) {
         console.error('Error fetching verification:', error);
@@ -47,6 +59,19 @@ export const useHealthcareVerification = () => {
     fetchVerification();
   }, [user]);
 
+  const getDocumentUrl = async (path: string) => {
+    try {
+      const { data } = await supabase.storage
+        .from('healthcare-docs')
+        .getPublicUrl(path);
+      
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error getting document URL:', error);
+      return null;
+    }
+  };
+
   const submitVerification = async (file: File, licenseNumber: string, specialization: string) => {
     if (!user) {
       toast.error('Please log in to submit verification');
@@ -54,8 +79,6 @@ export const useHealthcareVerification = () => {
     }
 
     try {
-      // First, ensure the healthcare-docs bucket exists (this is handled by backend)
-      
       // Create a unique file path
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
@@ -103,5 +126,5 @@ export const useHealthcareVerification = () => {
     }
   };
 
-  return { verification, loading, submitVerification };
+  return { verification, documentUrl, loading, submitVerification };
 };
