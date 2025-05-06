@@ -1,100 +1,103 @@
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { useAuth } from "@/contexts/auth";
 import { toast } from "sonner";
-import { SignupFormInputs } from "./SignupFormInputs";
-import { SignupFormFooter } from "./SignupFormFooter";
-import { UserRoles } from "@/types/roles";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Mail, Lock, User } from "lucide-react";
 
-export const PatientSignupForm = () => {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+interface PatientSignupFormProps {}
+
+export const PatientSignupForm: React.FC<PatientSignupFormProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
-  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm();
 
-  const [passwordStrength, setPasswordStrength] = useState({
-    score: 0,
-    label: "Weak",
-    color: "bg-red-500"
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!fullName || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    
-    if (passwordStrength.score < 2) {
-      toast.error("Please choose a stronger password");
-      return;
-    }
-    
-    if (!termsAccepted) {
-      toast.error("You must agree to the terms and privacy policy");
-      return;
-    }
-    
+  const onSubmit = async (data: any) => {
     setIsLoading(true);
-    
     try {
-      // Create user roles object with patient role
-      const roles: UserRoles = {
-        patient: true
-      };
-      
-      await signUp(email, password, { 
-        full_name: fullName, 
-        roles: roles
-      });
-      toast.success("Account created successfully! Verification email sent.");
-      navigate("/login");
+      await signUp(data.email, data.password, { full_name: data.fullName });
+      toast.success("Account created! Check your email to verify.");
     } catch (error: any) {
-      console.error("Registration error:", error);
-      toast.error(error.message || "Registration failed. Please try again.");
+      toast.error(error.message || "Signup failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <SignupFormInputs
-        fullName={fullName}
-        setFullName={setFullName}
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        confirmPassword={confirmPassword}
-        setConfirmPassword={setConfirmPassword}
-        showPassword={showPassword}
-        setShowPassword={setShowPassword}
-        showConfirmPassword={showConfirmPassword}
-        setShowConfirmPassword={setShowConfirmPassword}
-        passwordStrength={passwordStrength}
-        setPasswordStrength={setPasswordStrength}
-      />
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div>
+        <Label htmlFor="fullName" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+          Full Name
+        </Label>
+        <div className="relative">
+          <Input
+            id="fullName"
+            type="text"
+            placeholder="Enter your full name"
+            className="pl-10"
+            {...register("fullName", { required: "Full name is required" })}
+          />
+          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        </div>
+        {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>}
+      </div>
       
-      <SignupFormFooter
-        termsAccepted={termsAccepted}
-        setTermsAccepted={setTermsAccepted}
-        isLoading={isLoading}
-        buttonText="Create patient account"
-      />
+      <div>
+        <Label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+          Email
+        </Label>
+        <div className="relative">
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            className="pl-10"
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Invalid email format"
+              }
+            })}
+          />
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        </div>
+        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+      </div>
+      
+      <div>
+        <Label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+          Password
+        </Label>
+        <div className="relative">
+          <Input
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+            className="pl-10"
+            {...register("password", { required: "Password is required", minLength: { value: 6, message: "Password must be at least 6 characters" } })}
+          />
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        </div>
+        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+      </div>
+
+      <Button disabled={isLoading} className="w-full" type="submit">
+        {isLoading ? (
+          <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        ) : null}
+        Sign up
+      </Button>
     </form>
   );
 };

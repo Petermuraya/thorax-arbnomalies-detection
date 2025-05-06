@@ -1,7 +1,7 @@
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { useAuth } from "@/contexts/auth";
 import { toast } from "sonner";
 import { SignupFormInputs } from "./SignupFormInputs";
 import { SignupFormFooter } from "./SignupFormFooter";

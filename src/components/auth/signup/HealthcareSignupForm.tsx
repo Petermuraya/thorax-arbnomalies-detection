@@ -1,118 +1,174 @@
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/contexts/auth";
 import { toast } from "sonner";
-import { SignupFormInputs } from "./SignupFormInputs";
-import { SignupFormFooter } from "./SignupFormFooter";
-import { Role, UserRoles } from "@/types/roles";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { z } from "zod";
+
+const healthcareSignupSchema = z.object({
+  fullName: z.string().min(2, {
+    message: "Full name must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  password: z.string().min(8, {
+    message: "Password must be at least 8 characters.",
+  }),
+  specialty: z.string().min(3, {
+    message: "Specialty must be at least 3 characters.",
+  }),
+  licenseNumber: z.string().min(5, {
+    message: "License number must be at least 5 characters.",
+  }),
+  terms: z.boolean().refine((value) => value === true, {
+    message: "You must accept the terms and conditions.",
+  }),
+});
 
 export const HealthcareSignupForm = () => {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
-  const navigate = useNavigate();
 
-  const [passwordStrength, setPasswordStrength] = useState({
-    score: 0,
-    label: "Weak",
-    color: "bg-red-500"
+  const form = useForm<z.infer<typeof healthcareSignupSchema>>({
+    resolver: zodResolver(healthcareSignupSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      specialty: "",
+      licenseNumber: "",
+      terms: false,
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!fullName || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    
-    if (passwordStrength.score < 2) {
-      toast.error("Please choose a stronger password");
-      return;
-    }
-    
-    if (!termsAccepted) {
-      toast.error("You must agree to the terms and privacy policy");
-      return;
-    }
-    
+  const onSubmit = async (values: z.infer<typeof healthcareSignupSchema>) => {
     setIsLoading(true);
-    
     try {
-      // Create user roles object with healthstaff role
-      // Healthcare professionals can also be patients
-      const roles: UserRoles = {
-        healthstaff: true,
-        patient: true
-      };
-      
-      console.log("Signing up with roles:", roles);
-      
-      await signUp(email, password, { 
-        full_name: fullName, 
-        roles: roles
+      await signUp(values.email, values.password, {
+        full_name: values.fullName,
+        roles: { healthstaff: true },
       });
-      toast.success("Healthcare account created successfully! Verification email sent.");
-      navigate("/login");
+      toast.success("Account created! Please check your email to verify.");
     } catch (error: any) {
-      console.error("Registration error:", error);
-      
-      let errorMessage = "Registration failed. Please try again.";
-      
-      // Extract more specific error messages if available
-      if (error.message) {
-        if (error.message.includes("role_check")) {
-          errorMessage = "Invalid role selection. There appears to be a database constraint issue.";
-        } else if (error.message.includes("User already registered")) {
-          errorMessage = "This email is already registered. Please use a different email or login instead.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
-      toast.error(errorMessage);
+      console.error("Signup error:", error);
+      toast.error(error.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <SignupFormInputs
-        fullName={fullName}
-        setFullName={setFullName}
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        confirmPassword={confirmPassword}
-        setConfirmPassword={setConfirmPassword}
-        showPassword={showPassword}
-        setShowPassword={setShowPassword}
-        showConfirmPassword={showConfirmPassword}
-        setShowConfirmPassword={setShowConfirmPassword}
-        passwordStrength={passwordStrength}
-        setPasswordStrength={setPasswordStrength}
-      />
-      
-      <SignupFormFooter
-        termsAccepted={termsAccepted}
-        setTermsAccepted={setTermsAccepted}
-        isLoading={isLoading}
-        buttonText="Create healthcare account"
-      />
-    </form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="name@company.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="specialty"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Specialty</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="e.g., Cardiology, Radiology"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="licenseNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>License Number</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your license number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="terms"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-tight">
+                <FormLabel className="text-sm font-normal">
+                  Accept Terms and Conditions
+                </FormLabel>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="w-full bg-medical-blue text-white hover:bg-medical-blue-dark"
+        >
+          {isLoading ? "Creating Account..." : "Create Account"}
+        </Button>
+      </form>
+    </Form>
   );
 };

@@ -1,130 +1,53 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { getImageUrl } from '@/utils/storage';
-
-export interface HealthcareVerification {
-  id: string;
-  user_id: string;
-  document_path: string;
-  license_number: string;
-  specialization: string;
-  status: 'pending' | 'approved' | 'rejected';
-  reviewer_notes: string | null;
-  reviewer_id: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { useAuth } from '@/contexts/auth';
 
 export const useHealthcareVerification = () => {
-  const [verification, setVerification] = useState<HealthcareVerification | null>(null);
-  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (!user) return;
+  const verifyHealthcareProfessional = async (licenseNumber: string) => {
+    setIsVerifying(true);
+    setVerificationError(null);
 
-    const fetchVerification = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('healthcare_verification')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (error && error.code !== 'PGRST116') throw error;
-        if (data) {
-          setVerification(data as HealthcareVerification);
-          
-          // Try to get the document URL if we have a path
-          if (data.document_path) {
-            try {
-              const url = await getDocumentUrl(data.document_path);
-              setDocumentUrl(url);
-            } catch (urlError) {
-              console.error('Error fetching document URL:', urlError);
-            }
-          }
-        }
-      } catch (error: any) {
-        console.error('Error fetching verification:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVerification();
-  }, [user]);
-
-  const getDocumentUrl = async (path: string) => {
-    try {
-      const { data } = await supabase.storage
-        .from('healthcare-docs')
-        .getPublicUrl(path);
-      
-      return data.publicUrl;
-    } catch (error) {
-      console.error('Error getting document URL:', error);
-      return null;
-    }
-  };
-
-  const submitVerification = async (file: File, licenseNumber: string, specialization: string) => {
-    if (!user) {
-      toast.error('Please log in to submit verification');
-      return null;
+    if (!user?.id) {
+      setVerificationError("User ID not found. Please ensure you are logged in.");
+      setIsVerifying(false);
+      return;
     }
 
     try {
-      // Create a unique file path
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-      const filePath = `${user.id}/${fileName}.${fileExt}`;
-
-      console.log('Uploading file to:', filePath);
-      
-      // Upload the file to Supabase storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('healthcare-docs')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        throw new Error(`File upload failed: ${uploadError.message}`);
-      }
-
-      console.log('File uploaded successfully:', uploadData);
-      
-      // Insert verification record in the database
-      const { data, error: insertError } = await supabase
-        .from('healthcare_verification')
-        .insert({
+      // Call the Supabase function to verify healthcare professional status
+      const { data, error } = await supabase.functions.invoke('verify-healthcare-professional', {
+        body: {
           user_id: user.id,
-          document_path: filePath,
           license_number: licenseNumber,
-          specialization: specialization,
-          status: 'pending'
-        })
-        .select()
-        .single();
+        },
+      });
 
-      if (insertError) {
-        console.error('Database insert error:', insertError);
-        throw new Error(`Database record failed: ${insertError.message}`);
+      if (error) {
+        console.error("Verification error:", error);
+        setVerificationError(error.message || "An error occurred during verification.");
+      } else if (data?.success) {
+        setIsVerified(true);
+        console.log("Healthcare professional verified successfully.");
+      } else {
+        setVerificationError(data?.message || "Verification failed. Please check your license number.");
       }
-
-      setVerification(data as HealthcareVerification);
-      toast.success('Verification documents submitted successfully');
-      return data as HealthcareVerification;
-    } catch (error: any) {
-      console.error('Error submitting verification:', error);
-      toast.error(`Failed to submit verification documents: ${error.message}`);
-      return null;
+    } catch (err) {
+      console.error("Unexpected verification error:", err);
+      setVerificationError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  return { verification, documentUrl, loading, submitVerification };
+  return {
+    verifyHealthcareProfessional,
+    isVerifying,
+    verificationError,
+    isVerified,
+  };
 };

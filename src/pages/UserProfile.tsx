@@ -1,15 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { User } from "lucide-react";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/auth';
+import { supabase } from '@/integrations/supabase/client';
 
 const UserProfile = () => {
   const { user, session } = useAuth();

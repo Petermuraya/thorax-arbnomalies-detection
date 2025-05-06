@@ -1,94 +1,111 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useAuth } from '@/contexts/auth';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
-import { AdminSignupInputs } from "./AdminSignupInputs";
-import { Button } from "@/components/ui/button";
+const adminSignupSchema = z.object({
+  fullName: z.string().min(2, {
+    message: "Full name must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  password: z.string().min(8, {
+    message: "Password must be at least 8 characters.",
+  }),
+});
+
+type AdminSignupFormValues = z.infer<typeof adminSignupSchema>;
 
 export const AdminSignupForm = () => {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [adminKey, setAdminKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!fullName || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    
-    // Remove admin key validation
-    
+  const form = useForm<AdminSignupFormValues>({
+    resolver: zodResolver(adminSignupSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (values: AdminSignupFormValues) => {
     setIsLoading(true);
-    
     try {
-      const role = "admin";
-      
-      console.log("Attempting admin registration with role:", role);
-      
-      await signUp(email, password, { 
-        full_name: fullName, 
-        role: role
-      });
-      
-      toast.success("Admin account created successfully!");
-      
-      // Direct redirect to admin dashboard instead of login page
-      navigate("/admin-dashboard");
+      await signUp(values.email, values.password, { full_name: values.fullName, roles: { admin: true } });
+      toast.success("Admin account created successfully! Please check your email to verify.");
+      navigate('/login');
     } catch (error: any) {
-      console.error("Registration error:", error);
-      let errorMessage = "Registration failed. Please try again.";
-      
-      if (error.message) {
-        if (error.message.includes("role_check") || error.message.includes("profiles_role_check")) {
-          errorMessage = "Invalid role selection. The database constraint is rejecting the admin role value.";
-        } else if (error.message.includes("User already registered")) {
-          errorMessage = "This email is already registered. Please use a different email or login instead.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
-      toast.error(errorMessage);
+      toast.error(error.message || "Failed to create admin account. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <AdminSignupInputs
-        fullName={fullName}
-        setFullName={setFullName}
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        confirmPassword={confirmPassword}
-        setConfirmPassword={setConfirmPassword}
-        adminKey={adminKey}
-        setAdminKey={setAdminKey}
-      />
-      
-      <Button 
-        type="submit" 
-        className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md text-white shadow-md hover:shadow-lg transition-all duration-300"
-        disabled={isLoading}
-      >
-        {isLoading ? "Creating account..." : "Create Admin Account"}
-      </Button>
-    </form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormDescription>
+                Enter your full name.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="admin@example.com" type="email" {...field} />
+              </FormControl>
+              <FormDescription>
+                Enter your admin email address.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input placeholder="Password" type="password" {...field} />
+              </FormControl>
+              <FormDescription>
+                Enter a secure password.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading ? "Creating..." : "Create Admin Account"}
+        </Button>
+      </form>
+    </Form>
   );
 };

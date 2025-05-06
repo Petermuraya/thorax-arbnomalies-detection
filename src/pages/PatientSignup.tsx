@@ -1,7 +1,7 @@
 
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth";
 import { PatientSignupForm } from "@/components/auth/signup/PatientSignupForm";
 import { GoogleSignupButton } from "@/components/auth/signup/GoogleSignupButton";
 import Navbar from "@/components/Navbar";
