@@ -1,6 +1,7 @@
+
 import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChatBubble, Users, Calendar, Stethoscope } from "lucide-react";
+import { MessageSquare, Users, Calendar, Stethoscope } from "lucide-react";
 import { useNotify } from "@/hooks/useNotify";
 
 interface HealthStaffStatsProps {
