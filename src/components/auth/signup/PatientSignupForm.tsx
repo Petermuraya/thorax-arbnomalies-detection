@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
@@ -46,7 +47,7 @@ export const PatientSignupForm: React.FC<PatientSignupFormProps> = () => {
           />
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
         </div>
-        {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>}
+        {errors.fullName && <p className="text-red-500 text-sm mt-1">{String(errors.fullName.message)}</p>}
       </div>
       
       <div>
@@ -69,7 +70,7 @@ export const PatientSignupForm: React.FC<PatientSignupFormProps> = () => {
           />
           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
         </div>
-        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+        {errors.email && <p className="text-red-500 text-sm mt-1">{String(errors.email.message)}</p>}
       </div>
       
       <div>
@@ -86,7 +87,7 @@ export const PatientSignupForm: React.FC<PatientSignupFormProps> = () => {
           />
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
         </div>
-        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+        {errors.password && <p className="text-red-500 text-sm mt-1">{String(errors.password.message)}</p>}
       </div>
 
       <Button disabled={isLoading} className="w-full" type="submit">

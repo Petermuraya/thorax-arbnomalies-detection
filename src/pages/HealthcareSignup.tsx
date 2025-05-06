@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
@@ -5,6 +6,9 @@ import { HealthcareSignupForm } from "@/components/auth/signup/HealthcareSignupF
 import { GoogleSignupButton } from "@/components/auth/signup/GoogleSignupButton";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Role } from "@/types/roles";
+import { Info as InfoIcon } from "lucide-react";
 
 const HealthcareSignup = () => {
   const { user } = useAuth();
