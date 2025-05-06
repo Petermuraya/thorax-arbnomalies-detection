@@ -8,9 +8,10 @@ interface VerificationData {
   user_id: string;
   license_number: string;
   specialization: string;
-  document_path?: string;
+  document_path: string; // Changed from optional to required to match the database structure
   status: 'pending' | 'approved' | 'rejected';
   reviewer_notes?: string;
+  reviewer_id?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -79,7 +80,7 @@ export const useHealthcareVerification = () => {
         
       if (uploadError) throw uploadError;
       
-      // Create verification record
+      // Create verification record - Fixed table name from "healthcare_verifications" to "healthcare_verification"
       const verificationData: VerificationData = {
         user_id: user.id,
         license_number: licenseNumber,
@@ -89,7 +90,7 @@ export const useHealthcareVerification = () => {
       };
       
       const { data, error } = await supabase
-        .from('healthcare_verifications')
+        .from('healthcare_verification') // Fixed table name
         .insert(verificationData)
         .select()
         .single();
@@ -102,7 +103,12 @@ export const useHealthcareVerification = () => {
         .getPublicUrl(filePath);
         
       setDocumentUrl(urlData.publicUrl);
-      setVerification(data);
+      
+      // Fixed type issue by properly casting the data to VerificationData
+      if (data) {
+        const typedData = data as unknown as VerificationData;
+        setVerification(typedData);
+      }
       
       return true;
     } catch (err) {
