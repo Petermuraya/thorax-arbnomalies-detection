@@ -4,22 +4,9 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Role, ROLES, UserRoles, arrayToRoles } from "@/types/roles";
-
-// Define valid roles as a constant to ensure consistency across the application
-export const VALID_USER_ROLES = ROLES;
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, metadata: { full_name: string; roles?: UserRoles; role?: Role }) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  signOut: () => Promise<void>;
-  loading: boolean;
-  resetPassword: (email: string) => Promise<void>;
-  updateUserRoles: (roles: UserRoles) => Promise<void>;
-}
+import { Role, UserRoles } from "@/types/roles";
+import { AuthContextType } from "./types";
+import { VALID_USER_ROLES, resolveUserRoles, getDashboardRoute } from "./utils";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -44,28 +31,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             // Check if user has metadata, if not (Google sign-in) fetch from profiles table
             if (currentSession?.user) {
               // Check for roles or legacy role in metadata
-              let userRoles: UserRoles = {};
-              
-              if (currentSession.user.user_metadata?.roles) {
-                userRoles = currentSession.user.user_metadata.roles as UserRoles;
-              } else if (currentSession.user.user_metadata?.role) {
-                const legacyRole = currentSession.user.user_metadata.role as Role;
-                if (VALID_USER_ROLES.includes(legacyRole)) {
-                  userRoles = { [legacyRole]: true };
-                }
-              }
+              const userRoles = resolveUserRoles(currentSession.user);
               
               // If this is a new Google signup, check for stored role preference
               if (event === 'SIGNED_IN' && !currentSession.user.user_metadata?.roles && !currentSession.user.user_metadata?.role) {
                 const storedRole = localStorage.getItem("signupRole");
                 if (storedRole && VALID_USER_ROLES.includes(storedRole as Role)) {
-                  userRoles = { [storedRole as Role]: true };
+                  const newRoles = { [storedRole as Role]: true };
+                  
                   // Clear stored role
                   localStorage.removeItem("signupRole");
                   
                   // Update user metadata with the selected role
                   supabase.auth.updateUser({
-                    data: { roles: userRoles }
+                    data: { roles: newRoles }
                   }).catch(error => {
                     console.error("Error updating user roles:", error);
                   });
@@ -75,18 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               toast.success(`Welcome back, ${currentSession.user.user_metadata?.full_name || currentSession.user.email}`);
               
               // Navigate based on roles priority
-              if (userRoles.superuser) {
-                navigate('/admin-dashboard');
-              } else if (userRoles.admin) {
-                navigate('/admin-dashboard');
-              } else if (userRoles.healthstaff) {
-                navigate('/health-staff-dashboard');
-              } else if (userRoles.patient) {
-                navigate('/patient-dashboard');
-              } else {
-                // If no specific role, default to patient dashboard
-                navigate('/patient-dashboard');
-              }
+              navigate(getDashboardRoute(userRoles));
             }
           }, 0);
         } else if (event === 'SIGNED_OUT') {
@@ -221,10 +189,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+export const AuthContext = AuthContext;
