@@ -57,18 +57,22 @@ export function PatientConsultations() {
               
             return {
               ...consultation,
-              patient_name: profileData?.full_name || "Unknown Patient"
+              patient_name: profileData?.full_name || "Unknown Patient",
+              // Ensure status is one of the allowed values
+              status: consultation.status as "scheduled" | "completed" | "cancelled"
             };
           } catch {
             return {
               ...consultation,
-              patient_name: "Unknown Patient"
+              patient_name: "Unknown Patient",
+              // Ensure status is one of the allowed values
+              status: (consultation.status || "scheduled") as "scheduled" | "completed" | "cancelled"
             };
           }
         })
       );
       
-      setConsultations(consultationsWithNames);
+      setConsultations(consultationsWithNames as Consultation[]);
     } catch (error) {
       console.error("Error fetching consultations:", error);
       toast.error("Failed to load consultations");
@@ -125,13 +129,15 @@ export function PatientConsultations() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Input 
-          placeholder="Search consultations..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-xs"
-          startContent={<Search className="h-4 w-4" />}
-        />
+        <div className="relative w-full max-w-xs">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Input 
+            placeholder="Search consultations..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
+        </div>
         
         <Button className="flex items-center gap-2">
           <Plus className="h-4 w-4" />

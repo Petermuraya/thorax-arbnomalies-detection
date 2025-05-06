@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth";
@@ -136,9 +135,9 @@ export const useHealthcareStaff = () => {
   };
 
   const addPatientNameToConsultations = async (consultations: any[]): Promise<Consultation[]> => {
-    const result: Consultation[] = [...consultations];
+    const result: Consultation[] = [];
     
-    for (const consultation of result) {
+    for (const consultation of consultations) {
       try {
         const { data: profileData } = await supabase
           .from("profiles")
@@ -146,9 +145,23 @@ export const useHealthcareStaff = () => {
           .eq("id", consultation.patient_id)
           .single();
         
-        consultation.patient_name = profileData?.full_name || "Unknown Patient";
+        // Ensure status is a valid enum value
+        const status = consultation.status as "scheduled" | "completed" | "cancelled";
+        
+        result.push({
+          ...consultation,
+          patient_name: profileData?.full_name || "Unknown Patient",
+          status: status || "scheduled" // Default to scheduled if null
+        });
       } catch (error) {
-        consultation.patient_name = "Unknown Patient";
+        // Still add the consultation with a default name if profile fetch fails
+        const status = consultation.status as "scheduled" | "completed" | "cancelled";
+        
+        result.push({
+          ...consultation,
+          patient_name: "Unknown Patient",
+          status: status || "scheduled"
+        });
       }
     }
     

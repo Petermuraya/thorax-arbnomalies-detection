@@ -143,12 +143,14 @@ const HealthStaffDashboard = () => {
                     Review and provide professional feedback on patient X-rays
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Input 
-                    placeholder="Search analyses..." 
-                    className="max-w-xs"
-                    startContent={<Search className="h-4 w-4" />}
-                  />
+                <div className="flex items-center gap-2 relative">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                    <Input 
+                      placeholder="Search analyses..." 
+                      className="pl-8 max-w-xs"
+                    />
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
