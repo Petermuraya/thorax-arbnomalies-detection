@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type VerificationStatus = 'pending' | 'approved' | 'rejected';
+export type VerificationStatus = 'pending' | 'approved' | 'rejected';
 
 export interface VerificationItem {
   id: string;
@@ -29,26 +29,35 @@ export const useVerificationAdmin = () => {
   const fetchVerifications = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch verifications with user profile data
+      // Fetch all verifications first without trying to join with profiles
       const { data, error } = await supabase
         .from('healthcare_verification')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Transform data to include user_name from the profiles join
+      // Transform data to include proper typing for status
       const transformedData = data.map(item => ({
         ...item,
-        user_name: item.profiles?.full_name || 'Unknown User'
+        status: item.status as VerificationStatus, // Cast to ensure it's the correct type
+        user_name: 'Unknown User' // Default name
       }));
 
-      setVerifications(transformedData);
+      // Get user profiles in a separate query
+      for (const item of transformedData) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', item.user_id)
+          .single();
+
+        if (!profileError && profileData) {
+          item.user_name = profileData.full_name || 'Unknown User';
+        }
+      }
+
+      setVerifications(transformedData as VerificationItem[]);
 
       // Calculate counts
       const pending = transformedData.filter(v => v.status === 'pending').length;
