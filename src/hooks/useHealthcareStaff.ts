@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth";
 import { toast } from "sonner";
+import { useNotify } from "@/hooks/useNotify";
 
 export interface ChestAnalysis {
   id: string;
@@ -46,6 +47,7 @@ export const useHealthcareStaff = () => {
     totalPatientsCount: 0
   });
   const { user } = useAuth();
+  const { notifyInfo, notifySuccess, notifyError } = useNotify();
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
@@ -106,13 +108,33 @@ export const useHealthcareStaff = () => {
         totalPatientsCount: await getUniquePatientCount(user.id)
       });
 
+      // Send notifications for new data
+      if (pendingWithUserNames.length > 0) {
+        notifyInfo(
+          "Pending Analyses", 
+          `You have ${pendingWithUserNames.length} analyses waiting for review`,
+          { link: "/health-staff-dashboard?tab=pending-analysis", actionText: "View Analyses" }
+        );
+      }
+      
+      if (consultationsWithNames.length > 0) {
+        const nextConsultation = consultationsWithNames[0];
+        const consultationTime = new Date(nextConsultation.scheduled_for).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        notifyInfo(
+          "Upcoming Consultations", 
+          `You have ${consultationsWithNames.length} consultations today. Next one at ${consultationTime} with ${nextConsultation.patient_name}`,
+          { link: "/health-staff-dashboard?tab=consultations", actionText: "View Schedule" }
+        );
+      }
+
     } catch (error) {
       console.error("Error fetching healthcare data:", error);
-      toast.error("Failed to load healthcare data");
+      notifyError("Data Error", "Failed to load healthcare data");
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, notifyInfo, notifyError]);
 
   const addUserNameToAnalyses = async (analyses: any[]): Promise<ChestAnalysis[]> => {
     const result: ChestAnalysis[] = [...analyses];
@@ -200,12 +222,20 @@ export const useHealthcareStaff = () => {
 
       if (error) throw error;
       
-      toast.success("Analysis updated successfully");
+      notifySuccess(
+        "Analysis Updated", 
+        "The X-ray analysis has been successfully reviewed",
+        { showToast: true }
+      );
+      
       await fetchData();
       return true;
     } catch (error) {
       console.error("Error updating analysis:", error);
-      toast.error("Failed to update analysis");
+      notifyError(
+        "Update Failed", 
+        "Failed to update the analysis. Please try again."
+      );
       return false;
     }
   };

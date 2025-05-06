@@ -2,14 +2,13 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, RefreshCw, FileText } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
 import { useHealthcareStaff } from "@/hooks/useHealthcareStaff";
 import { HealthStaffStats } from "@/components/healthcare/HealthStaffStats";
 import { PendingAnalysisTable } from "@/components/healthcare/PendingAnalysisTable";
@@ -18,7 +17,11 @@ import { PatientConsultations } from "@/components/healthcare/PatientConsultatio
 const HealthStaffDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const tabFromUrl = searchParams.get('tab') || 'overview';
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
+  
   const { 
     pendingAnalyses, 
     completedAnalyses,
@@ -34,6 +37,22 @@ const HealthStaffDashboard = () => {
     }
   }, [user, navigate]);
 
+  // Update URL when tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const newSearchParams = new URLSearchParams(location.search);
+    if (value === 'overview') {
+      newSearchParams.delete('tab');
+    } else {
+      newSearchParams.set('tab', value);
+    }
+    const newSearch = newSearchParams.toString();
+    navigate({
+      pathname: location.pathname,
+      search: newSearch ? `?${newSearch}` : '',
+    }, { replace: true });
+  };
+
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
@@ -47,7 +66,7 @@ const HealthStaffDashboard = () => {
 
         <HealthStaffStats stats={stats} isLoading={isLoading} />
 
-        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mt-6">
+        <Tabs defaultValue="overview" value={activeTab} onValueChange={handleTabChange} className="mt-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="pending-analysis">

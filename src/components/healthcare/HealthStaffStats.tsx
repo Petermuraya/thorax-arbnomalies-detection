@@ -1,7 +1,9 @@
+import React, { useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChatBubble, Users, Calendar, Stethoscope } from "lucide-react";
+import { useNotify } from "@/hooks/useNotify";
 
-import { Card, CardContent } from "@/components/ui/card";
-
-interface StatsProps {
+interface HealthStaffStatsProps {
   stats: {
     pendingAnalysesCount: number;
     completedAnalysesCount: number;
@@ -11,9 +13,55 @@ interface StatsProps {
   isLoading: boolean;
 }
 
-export function HealthStaffStats({ stats, isLoading }: StatsProps) {
+export const HealthStaffStats = ({ stats, isLoading }: HealthStaffStatsProps) => {
+  const { notifyInfo, notifySuccess, notifyWarning, notifyError } = useNotify();
+  
+  useEffect(() => {
+    // Example notifications - in a real app these would come from events
+    if (!isLoading) {
+      // Welcome notification
+      setTimeout(() => {
+        notifySuccess(
+          "Welcome back, Doctor", 
+          "Your dashboard is ready with the latest updates",
+          { showToast: false }
+        );
+      }, 1500);
+      
+      // Analysis notification
+      if (stats.pendingAnalysesCount > 0) {
+        setTimeout(() => {
+          notifyWarning(
+            "Pending Analyses", 
+            `You have ${stats.pendingAnalysesCount} X-ray analyses waiting for your review`,
+            { 
+              showToast: false,
+              link: "/health-staff-dashboard?tab=pending-analysis",
+              actionText: "Review Analyses" 
+            }
+          );
+        }, 3500);
+      }
+      
+      // Consultation notification
+      if (stats.todayConsultationsCount > 0) {
+        setTimeout(() => {
+          notifyInfo(
+            "Today's Schedule", 
+            `You have ${stats.todayConsultationsCount} consultations scheduled for today`,
+            { 
+              showToast: false,
+              link: "/health-staff-dashboard?tab=consultations",
+              actionText: "View Schedule" 
+            }
+          );
+        }, 5500);
+      }
+    }
+  }, [isLoading, stats, notifyInfo, notifySuccess, notifyWarning, notifyError]);
+  
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard 
         title="Pending Reviews"
         value={stats.pendingAnalysesCount}
@@ -40,7 +88,7 @@ export function HealthStaffStats({ stats, isLoading }: StatsProps) {
       />
     </div>
   );
-}
+};
 
 interface StatCardProps {
   title: string;
