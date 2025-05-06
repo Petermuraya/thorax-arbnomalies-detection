@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useEffect } from 'react';
 import { useAuth } from "@/contexts/auth";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, PlusCircle, Scan, Activity, Clock, CreditCard } from "lucide-react";
 import XrayUploader from "@/components/XrayUploader";
 import AIAnalysisViewer from "@/components/AIAnalysisViewer";
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { WelcomeSection } from "@/components/dashboard/WelcomeSection";
 import { UpcomingAppointments } from "@/components/dashboard/UpcomingAppointments";

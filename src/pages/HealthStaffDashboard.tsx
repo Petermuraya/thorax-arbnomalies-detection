@@ -1,5 +1,6 @@
+
 import { useEffect } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/auth";
 import { useNavigate } from "react-router-dom";
 
