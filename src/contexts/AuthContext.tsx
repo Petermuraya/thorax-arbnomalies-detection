@@ -81,7 +81,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 navigate('/admin-dashboard');
               } else if (userRoles.healthstaff) {
                 navigate('/health-staff-dashboard');
+              } else if (userRoles.patient) {
+                navigate('/patient-dashboard');
               } else {
+                // If no specific role, default to patient dashboard
                 navigate('/patient-dashboard');
               }
             }
@@ -156,7 +159,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
     
     // Remove legacy role if it exists
-    if (finalMetadata.role) {
+    if ('role' in finalMetadata) {
       delete finalMetadata.role;
     }
     

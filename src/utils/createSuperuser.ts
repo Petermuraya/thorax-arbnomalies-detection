@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Role } from "@/types/roles";
+import { Role, addRole, UserRoles } from "@/types/roles";
 
 export const createSuperuser = async (
   email: string,
@@ -8,8 +8,8 @@ export const createSuperuser = async (
   fullName: string
 ) => {
   try {
-    // Explicitly set role to superuser
-    const role: Role = "superuser";
+    // Create user roles object with superuser role
+    const userRoles: UserRoles = { superuser: true };
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -17,13 +17,16 @@ export const createSuperuser = async (
       options: {
         data: {
           full_name: fullName,
-          role: role
+          roles: userRoles
         },
         emailRedirectTo: `${window.location.origin}/login`,
       },
     });
 
     if (error) throw error;
+    
+    // If the user was created successfully, log success message
+    console.log("Superuser created successfully:", data);
     
     return {
       success: true,
