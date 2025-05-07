@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Users, Calendar, Stethoscope } from "lucide-react";
@@ -20,15 +21,15 @@ export const HealthStaffStats = ({ stats, isLoading }: HealthStaffStatsProps) =>
   useEffect(() => {
     // Only show notifications when data is loaded and hasn't been shown yet
     if (!isLoading && !welcomeNotificationSent.current) {
-      // Welcome notification - only show once
+      // Welcome notification - only show once per session
       notifySuccess(
         "Welcome back, Doctor", 
         "Your dashboard is ready with the latest updates",
-        { showToast: false }
+        { showToast: true }
       );
       welcomeNotificationSent.current = true;
       
-      // Only show these notifications if there's something to notify about
+      // Only show these notifications if there's something to notify about and we haven't shown the welcome yet
       if (stats.pendingAnalysesCount > 0) {
         notifyWarning(
           "Pending Analyses", 

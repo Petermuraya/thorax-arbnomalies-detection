@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth";
 import { toast } from "sonner";
@@ -40,19 +40,25 @@ export const useHealthcareStaff = () => {
   const [completedAnalyses, setCompletedAnalyses] = useState<ChestAnalysis[]>([]);
   const [todayConsultations, setTodayConsultations] = useState<Consultation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<HealthcareStats>({
     pendingAnalysesCount: 0,
     completedAnalysesCount: 0,
     todayConsultationsCount: 0,
     totalPatientsCount: 0
   });
+  
   const { user } = useAuth();
   const { notifyInfo, notifyError } = useNotify();
+  const isFetchingRef = useRef(false);
 
   const fetchData = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id || isFetchingRef.current) return;
     
+    isFetchingRef.current = true;
     setIsLoading(true);
+    setError(null);
+    
     try {
       console.log("Fetching healthcare staff data...");
       
@@ -64,8 +70,6 @@ export const useHealthcareStaff = () => {
         .order("created_at", { ascending: false });
 
       if (pendingError) throw pendingError;
-
-      console.log("Pending analyses:", pendingData);
       
       // Fetch user data for pending analyses
       const pendingWithUserNames = await addUserNameToAnalyses(pendingData || []);
@@ -112,15 +116,19 @@ export const useHealthcareStaff = () => {
         totalPatientsCount: await getUniquePatientCount(user.id)
       });
       
-      // Only send this notification if there are pending analyses and it's being called from an initial load (not refresh)
-      // We'll skip the notification here since we're handling it in the HealthStaffStats component now
     } catch (error) {
       console.error("Error fetching healthcare data:", error);
+      setError("Failed to load healthcare data. Please try again.");
       toast.error("Failed to load healthcare data");
+      notifyError(
+        "Data Loading Error", 
+        "We encountered a problem loading your healthcare data. Please try refreshing."
+      );
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [user?.id, notifyInfo]);
+  }, [user?.id, notifyInfo, notifyError]);
 
   const addUserNameToAnalyses = async (analyses: any[]): Promise<ChestAnalysis[]> => {
     const result: ChestAnalysis[] = [...analyses];
@@ -269,6 +277,7 @@ export const useHealthcareStaff = () => {
     completedAnalyses,
     todayConsultations,
     isLoading,
+    error,
     refreshData: fetchData,
     stats,
     updateAnalysis

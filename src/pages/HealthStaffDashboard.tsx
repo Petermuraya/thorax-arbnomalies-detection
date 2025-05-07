@@ -8,11 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, RefreshCw, FileText } from "lucide-react";
+import { Search, RefreshCw, FileText, AlertTriangle } from "lucide-react";
 import { useHealthcareStaff } from "@/hooks/useHealthcareStaff";
 import { HealthStaffStats } from "@/components/healthcare/HealthStaffStats";
 import { PendingAnalysisTable } from "@/components/healthcare/PendingAnalysisTable";
 import { PatientConsultations } from "@/components/healthcare/PatientConsultations";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const HealthStaffDashboard = () => {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ const HealthStaffDashboard = () => {
     completedAnalyses,
     todayConsultations,
     isLoading,
+    error,
     refreshData,
     stats
   } = useHealthcareStaff();
@@ -70,11 +72,34 @@ const HealthStaffDashboard = () => {
       <div className="container mx-auto py-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">Health Staff Dashboard</h1>
-          <Button variant="outline" size="sm" onClick={refreshData} className="flex items-center gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Refresh Data
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={refreshData} 
+            className="flex items-center gap-2"
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            {isLoading ? 'Loading...' : 'Refresh Data'}
           </Button>
         </div>
+
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {error}
+              <Button 
+                variant="link" 
+                className="p-0 h-auto ml-2 text-white underline"
+                onClick={refreshData}
+              >
+                Try again
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <HealthStaffStats stats={stats} isLoading={isLoading} />
 
