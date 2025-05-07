@@ -1,35 +1,29 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNotifications } from "@/contexts/notifications";
-import { Bell, Check, X, CheckCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Bell, BellOff, Check, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 export const NotificationCenter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotifications();
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    markAllAsRead,
+    removeNotification,
+    clearAllNotifications
+  } = useNotifications();
   const navigate = useNavigate();
 
-  // Close notification panel when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      // If notification panel is open and clicked element isn't part of it, close it
-      if (isOpen && !target.closest('.notification-center')) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const togglePanel = () => {
+  const toggleOpen = () => {
     setIsOpen(!isOpen);
+    if (!isOpen && unreadCount > 0) {
+      // Mark all as read when opening the panel
+      markAllAsRead();
+    }
   };
 
   const handleNotificationClick = (id: string, link?: string) => {
@@ -41,184 +35,111 @@ export const NotificationCenter: React.FC = () => {
     }
   };
 
-  const getNotificationColorClass = (type: string) => {
+  const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'success':
-        return 'bg-green-50 border-l-4 border-green-500';
-      case 'warning':
-        return 'bg-amber-50 border-l-4 border-amber-500';
-      case 'error':
-        return 'bg-red-50 border-l-4 border-red-500';
-      case 'medical':
-        return 'bg-blue-50 border-l-4 border-blue-500';
-      default:
-        return 'bg-slate-50 border-l-4 border-slate-500';
+      case "success": return "bg-green-100 text-green-800 border-green-200";
+      case "error": return "bg-red-100 text-red-800 border-red-200";
+      case "warning": return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "medical": return "bg-purple-100 text-purple-800 border-purple-200";
+      default: return "bg-blue-100 text-blue-800 border-blue-200";
     }
-  };
-
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) {
-      return 'just now';
-    }
-    
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} min${diffInMinutes !== 1 ? 's' : ''} ago`;
-    }
-    
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`;
-    }
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 30) {
-      return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`;
-    }
-    
-    return date.toLocaleDateString();
   };
 
   return (
-    <div className="notification-center fixed top-4 right-4 z-50">
-      <div className="relative">
-        <Button 
-          variant="outline" 
-          onClick={togglePanel} 
-          className="relative rounded-full p-2 h-auto"
-          aria-label="Notifications"
-        >
-          <Bell size={20} />
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 min-w-[1.2rem] min-h-[1.2rem] flex items-center justify-center p-0 text-xs"
-            >
-              {unreadCount}
-            </Badge>
-          )}
-        </Button>
-
-        {isOpen && (
-          <Card className="absolute right-0 top-12 w-80 md:w-96 shadow-lg z-50 max-h-[80vh] overflow-hidden">
-            <CardHeader className="py-3 px-4 flex flex-row items-center justify-between border-b">
-              <CardTitle className="text-base font-medium">Notifications</CardTitle>
-              <div className="flex items-center gap-1">
-                {unreadCount > 0 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={markAllAsRead} 
-                    className="h-7 text-xs"
-                  >
-                    <CheckCheck className="h-3.5 w-3.5 mr-1" />
-                    Mark all as read
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            
-            <CardContent className="p-0 overflow-y-auto max-h-[50vh]">
-              {notifications.length === 0 ? (
-                <div className="py-8 px-4 text-center text-gray-500">
-                  <p>No notifications yet</p>
-                </div>
-              ) : (
-                <div>
-                  {notifications.map(notification => (
-                    <div 
-                      key={notification.id} 
-                      className={`${getNotificationColorClass(notification.type)} p-3 border-b relative ${!notification.read ? 'bg-opacity-80' : 'bg-opacity-40'}`}
-                    >
-                      <div 
-                        className={`cursor-pointer ${notification.link ? 'hover:bg-gray-50' : ''}`}
-                        onClick={() => notification.link && handleNotificationClick(notification.id, notification.link)}
-                      >
-                        <div className="flex justify-between items-start">
-                          <h4 className={`font-medium text-sm ${!notification.read ? '' : 'text-gray-600'}`}>
-                            {notification.title}
-                          </h4>
-                          <div className="flex items-center space-x-1">
-                            <span className="text-xs text-gray-500">
-                              {formatTimeAgo(notification.timestamp)}
-                            </span>
-                            {!notification.read && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  markAsRead(notification.id);
-                                }}
-                                className="h-5 w-5 p-0"
-                              >
-                                <Check className="h-3 w-3" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-                        {notification.link && notification.actionText && (
-                          <div className="mt-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-7 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleNotificationClick(notification.id, notification.link);
-                              }}
-                            >
-                              {notification.actionText}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeNotification(notification.id);
-                        }}
-                        className="absolute right-2 top-2 h-5 w-5 p-0 opacity-50 hover:opacity-100"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-            
-            {notifications.length > 0 && (
-              <CardFooter className="py-2 px-4 border-t flex justify-between">
-                <span className="text-xs text-gray-500">
-                  {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-                  onClick={() => {
-                    const confirmed = window.confirm("Clear all notifications?");
-                    if (confirmed) {
-                      // This would be better with a proper confirmation dialog component
-                      removeNotification("all");
-                    }
-                  }}
-                >
-                  <Trash2 className="h-3.5 w-3.5 mr-1" />
-                  Clear all
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
+    <div className="fixed right-4 top-16 z-50">
+      {/* Notification bell */}
+      <Button
+        variant="outline"
+        size="icon"
+        className="rounded-full relative"
+        onClick={toggleOpen}
+      >
+        {unreadCount > 0 ? <Bell /> : <BellOff />}
+        {unreadCount > 0 && (
+          <Badge 
+            variant="destructive" 
+            className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0"
+          >
+            {unreadCount}
+          </Badge>
         )}
-      </div>
+      </Button>
+
+      {/* Notification panel */}
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-80 max-h-[80vh] bg-white shadow-lg rounded-md border overflow-hidden">
+          <div className="p-3 border-b bg-slate-50 flex justify-between items-center">
+            <h3 className="font-medium">Notifications</h3>
+            <div className="flex gap-1">
+              <Button variant="ghost" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0}>
+                <Check className="h-4 w-4 mr-1" />
+                <span className="text-xs">Mark all read</span>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={clearAllNotifications} disabled={notifications.length === 0}>
+                <Trash2 className="h-4 w-4 mr-1" />
+                <span className="text-xs">Clear all</span>
+              </Button>
+            </div>
+          </div>
+          
+          <div className="overflow-y-auto max-h-[60vh]">
+            {notifications.length > 0 ? (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-3 border-b relative ${notification.read ? 'opacity-75' : 'bg-slate-50'}`}
+                >
+                  <div 
+                    className={`cursor-pointer ${notification.link ? 'hover:bg-slate-100' : ''}`}
+                    onClick={() => handleNotificationClick(notification.id, notification.link)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-sm">{notification.title}</h4>
+                      <span className="text-xs text-gray-500">
+                        {new Date(notification.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                    
+                    {notification.link && notification.actionText && (
+                      <div className="mt-2">
+                        <Button 
+                          variant="link" 
+                          size="sm" 
+                          className="h-auto p-0 text-xs text-blue-600"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNotificationClick(notification.id, notification.link);
+                          }}
+                        >
+                          {notification.actionText}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 absolute top-1 right-1 text-gray-400 hover:text-gray-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeNotification(notification.id);
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))
+            ) : (
+              <div className="p-6 text-center text-gray-500">
+                <BellOff className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                <p>No notifications</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

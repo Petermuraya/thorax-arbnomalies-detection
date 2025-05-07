@@ -47,13 +47,15 @@ export const useHealthcareStaff = () => {
     totalPatientsCount: 0
   });
   const { user } = useAuth();
-  const { notifyInfo, notifySuccess, notifyError } = useNotify();
+  const { notifyInfo, notifyError } = useNotify();
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
     
     setIsLoading(true);
     try {
+      console.log("Fetching healthcare staff data...");
+      
       // Fetch analyses that need doctor review (pending)
       const { data: pendingData, error: pendingError } = await supabase
         .from("chest_analysis")
@@ -63,6 +65,8 @@ export const useHealthcareStaff = () => {
 
       if (pendingError) throw pendingError;
 
+      console.log("Pending analyses:", pendingData);
+      
       // Fetch user data for pending analyses
       const pendingWithUserNames = await addUserNameToAnalyses(pendingData || []);
       setPendingAnalyses(pendingWithUserNames);
@@ -107,34 +111,16 @@ export const useHealthcareStaff = () => {
         todayConsultationsCount: consultationsWithNames.length,
         totalPatientsCount: await getUniquePatientCount(user.id)
       });
-
-      // Send notifications for new data
-      if (pendingWithUserNames.length > 0) {
-        notifyInfo(
-          "Pending Analyses", 
-          `You have ${pendingWithUserNames.length} analyses waiting for review`,
-          { link: "/health-staff-dashboard?tab=pending-analysis", actionText: "View Analyses" }
-        );
-      }
       
-      if (consultationsWithNames.length > 0) {
-        const nextConsultation = consultationsWithNames[0];
-        const consultationTime = new Date(nextConsultation.scheduled_for).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        notifyInfo(
-          "Upcoming Consultations", 
-          `You have ${consultationsWithNames.length} consultations today. Next one at ${consultationTime} with ${nextConsultation.patient_name}`,
-          { link: "/health-staff-dashboard?tab=consultations", actionText: "View Schedule" }
-        );
-      }
-
+      // Only send this notification if there are pending analyses and it's being called from an initial load (not refresh)
+      // We'll skip the notification here since we're handling it in the HealthStaffStats component now
     } catch (error) {
       console.error("Error fetching healthcare data:", error);
-      notifyError("Data Error", "Failed to load healthcare data");
+      toast.error("Failed to load healthcare data");
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, notifyInfo, notifyError]);
+  }, [user?.id, notifyInfo]);
 
   const addUserNameToAnalyses = async (analyses: any[]): Promise<ChestAnalysis[]> => {
     const result: ChestAnalysis[] = [...analyses];
@@ -222,23 +208,55 @@ export const useHealthcareStaff = () => {
 
       if (error) throw error;
       
-      notifySuccess(
-        "Analysis Updated", 
-        "The X-ray analysis has been successfully reviewed",
-        { showToast: true }
-      );
+      toast.success("The X-ray analysis has been successfully reviewed");
       
       await fetchData();
       return true;
     } catch (error) {
       console.error("Error updating analysis:", error);
-      notifyError(
-        "Update Failed", 
-        "Failed to update the analysis. Please try again."
-      );
+      toast.error("Failed to update the analysis. Please try again.");
       return false;
     }
   };
+
+  // Set up realtime subscription for new analyses
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    // Create a subscription for new analyses
+    const channel = supabase
+      .channel('healthcare_staff_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chest_analysis',
+          filter: `status=eq.pending`
+        },
+        (payload) => {
+          console.log("New analysis submitted:", payload);
+          // Refresh the data to get the latest
+          fetchData();
+          
+          // Show notification for new analysis
+          notifyInfo(
+            "New Analysis Submitted", 
+            "A new X-ray has been submitted for review", 
+            { 
+              showToast: true,
+              link: "/health-staff-dashboard?tab=pending-analysis",
+              actionText: "Review Now"
+            }
+          );
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, notifyInfo, fetchData]);
 
   useEffect(() => {
     if (user?.id) {

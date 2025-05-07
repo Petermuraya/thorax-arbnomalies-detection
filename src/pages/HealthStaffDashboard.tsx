@@ -21,6 +21,7 @@ const HealthStaffDashboard = () => {
   const searchParams = new URLSearchParams(location.search);
   const tabFromUrl = searchParams.get('tab') || 'overview';
   const [activeTab, setActiveTab] = useState(tabFromUrl);
+  const [searchQuery, setSearchQuery] = useState("");
   
   const { 
     pendingAnalyses, 
@@ -53,6 +54,17 @@ const HealthStaffDashboard = () => {
     }, { replace: true });
   };
 
+  // Filter analyses based on search query
+  const filteredAnalyses = pendingAnalyses.filter(analysis => {
+    if (!searchQuery) return true;
+    const lowercaseQuery = searchQuery.toLowerCase();
+    return (
+      analysis.user_name?.toLowerCase().includes(lowercaseQuery) ||
+      analysis.analysis_result?.toLowerCase().includes(lowercaseQuery) ||
+      new Date(analysis.created_at).toLocaleDateString().includes(lowercaseQuery)
+    );
+  });
+
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
@@ -72,7 +84,7 @@ const HealthStaffDashboard = () => {
             <TabsTrigger value="pending-analysis">
               Pending Analysis
               {pendingAnalyses.length > 0 && (
-                <Badge variant="warning" className="ml-2">
+                <Badge variant="destructive" className="ml-2">
                   {pendingAnalyses.length}
                 </Badge>
               )}
@@ -82,7 +94,7 @@ const HealthStaffDashboard = () => {
           
           <TabsContent value="overview" className="mt-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Recent Activity */}
+              {/* Recent Activity showing completed analyses */}
               <Card>
                 <CardHeader>
                   <CardTitle>Recent Activity</CardTitle>
@@ -95,27 +107,32 @@ const HealthStaffDashboard = () => {
                       <div className="h-6 bg-gray-200 animate-pulse rounded"></div>
                       <div className="h-6 bg-gray-200 animate-pulse rounded"></div>
                     </div>
-                  ) : (
-                    <>
-                      <div className="flex justify-between items-center p-3 bg-blue-50 rounded-md">
+                  ) : completedAnalyses.length > 0 ? (
+                    completedAnalyses.slice(0, 3).map((analysis) => (
+                      <div key={analysis.id} className="flex justify-between items-center p-3 bg-blue-50 rounded-md">
                         <div className="flex items-center gap-2">
                           <FileText className="h-5 w-5 text-blue-600" />
-                          <span>You reviewed 3 X-ray analyses</span>
+                          <span>Reviewed X-ray for {analysis.user_name}</span>
                         </div>
-                        <span className="text-sm text-gray-500">2 hours ago</span>
+                        <span className="text-sm text-gray-500">
+                          {new Date(analysis.updated_at).toLocaleDateString()}
+                        </span>
                       </div>
-                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-md">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-green-600" />
-                          <span>Completed consultation with James Wilson</span>
-                        </div>
-                        <span className="text-sm text-gray-500">Yesterday</span>
-                      </div>
-                    </>
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">No recent activities to show</p>
                   )}
-                  <div className="text-center mt-2">
-                    <Button variant="link" className="text-blue-600">View All Activity</Button>
-                  </div>
+                  {completedAnalyses.length > 3 && (
+                    <div className="text-center mt-2">
+                      <Button 
+                        variant="link" 
+                        className="text-blue-600"
+                        onClick={() => handleTabChange('completed-analysis')}
+                      >
+                        View All Activity
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -168,12 +185,14 @@ const HealthStaffDashboard = () => {
                     <Input 
                       placeholder="Search analyses..." 
                       className="pl-8 max-w-xs"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <PendingAnalysisTable analyses={pendingAnalyses} isLoading={isLoading} />
+                <PendingAnalysisTable analyses={filteredAnalyses} isLoading={isLoading} />
               </CardContent>
             </Card>
           </TabsContent>

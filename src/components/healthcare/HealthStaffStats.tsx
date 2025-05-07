@@ -1,5 +1,4 @@
-
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Users, Calendar, Stethoscope } from "lucide-react";
 import { useNotify } from "@/hooks/useNotify";
@@ -15,51 +14,46 @@ interface HealthStaffStatsProps {
 }
 
 export const HealthStaffStats = ({ stats, isLoading }: HealthStaffStatsProps) => {
-  const { notifyInfo, notifySuccess, notifyWarning, notifyError } = useNotify();
+  const { notifyInfo, notifySuccess, notifyWarning } = useNotify();
+  const welcomeNotificationSent = useRef(false);
   
   useEffect(() => {
-    // Example notifications - in a real app these would come from events
-    if (!isLoading) {
-      // Welcome notification
-      setTimeout(() => {
-        notifySuccess(
-          "Welcome back, Doctor", 
-          "Your dashboard is ready with the latest updates",
-          { showToast: false }
-        );
-      }, 1500);
+    // Only show notifications when data is loaded and hasn't been shown yet
+    if (!isLoading && !welcomeNotificationSent.current) {
+      // Welcome notification - only show once
+      notifySuccess(
+        "Welcome back, Doctor", 
+        "Your dashboard is ready with the latest updates",
+        { showToast: false }
+      );
+      welcomeNotificationSent.current = true;
       
-      // Analysis notification
+      // Only show these notifications if there's something to notify about
       if (stats.pendingAnalysesCount > 0) {
-        setTimeout(() => {
-          notifyWarning(
-            "Pending Analyses", 
-            `You have ${stats.pendingAnalysesCount} X-ray analyses waiting for your review`,
-            { 
-              showToast: false,
-              link: "/health-staff-dashboard?tab=pending-analysis",
-              actionText: "Review Analyses" 
-            }
-          );
-        }, 3500);
+        notifyWarning(
+          "Pending Analyses", 
+          `You have ${stats.pendingAnalysesCount} X-ray analyses waiting for your review`,
+          { 
+            showToast: false,
+            link: "/health-staff-dashboard?tab=pending-analysis",
+            actionText: "Review Analyses" 
+          }
+        );
       }
       
-      // Consultation notification
       if (stats.todayConsultationsCount > 0) {
-        setTimeout(() => {
-          notifyInfo(
-            "Today's Schedule", 
-            `You have ${stats.todayConsultationsCount} consultations scheduled for today`,
-            { 
-              showToast: false,
-              link: "/health-staff-dashboard?tab=consultations",
-              actionText: "View Schedule" 
-            }
-          );
-        }, 5500);
+        notifyInfo(
+          "Today's Schedule", 
+          `You have ${stats.todayConsultationsCount} consultations scheduled for today`,
+          { 
+            showToast: false,
+            link: "/health-staff-dashboard?tab=consultations",
+            actionText: "View Schedule" 
+          }
+        );
       }
     }
-  }, [isLoading, stats, notifyInfo, notifySuccess, notifyWarning, notifyError]);
+  }, [isLoading, stats, notifyInfo, notifySuccess, notifyWarning]);
   
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
