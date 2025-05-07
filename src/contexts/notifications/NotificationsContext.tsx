@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 export type NotificationType = "info" | "success" | "warning" | "error" | "medical";
@@ -15,10 +15,15 @@ export interface Notification {
   actionText?: string;
 }
 
-interface NotificationsState {
+type NotificationsState = {
   notifications: Notification[];
   unreadCount: number;
-}
+};
+
+const initialState: NotificationsState = {
+  notifications: [],
+  unreadCount: 0
+};
 
 type NotificationsAction =
   | { type: "ADD_NOTIFICATION"; payload: Omit<Notification, "id" | "timestamp" | "read"> }
@@ -26,11 +31,6 @@ type NotificationsAction =
   | { type: "MARK_ALL_AS_READ" }
   | { type: "REMOVE_NOTIFICATION"; payload: string }
   | { type: "CLEAR_ALL_NOTIFICATIONS" };
-
-const initialState: NotificationsState = {
-  notifications: [],
-  unreadCount: 0
-};
 
 const notificationsReducer = (state: NotificationsState, action: NotificationsAction): NotificationsState => {
   switch (action.type) {
@@ -46,53 +46,63 @@ const notificationsReducer = (state: NotificationsState, action: NotificationsAc
         notifications: [newNotification, ...state.notifications],
         unreadCount: state.unreadCount + 1
       };
+
     case "MARK_AS_READ":
       return {
         ...state,
-        notifications: state.notifications.map(notification => 
-          notification.id === action.payload 
-            ? { ...notification, read: true } 
+        notifications: state.notifications.map(notification =>
+          notification.id === action.payload
+            ? { ...notification, read: true }
             : notification
         ),
         unreadCount: Math.max(state.unreadCount - 1, 0)
       };
+
     case "MARK_ALL_AS_READ":
       return {
         ...state,
-        notifications: state.notifications.map(notification => ({ ...notification, read: true })),
+        notifications: state.notifications.map(notification => ({
+          ...notification,
+          read: true
+        })),
         unreadCount: 0
       };
+
     case "REMOVE_NOTIFICATION":
       const notificationToRemove = state.notifications.find(n => n.id === action.payload);
       return {
         ...state,
-        notifications: state.notifications.filter(notification => notification.id !== action.payload),
-        unreadCount: notificationToRemove && !notificationToRemove.read 
-          ? Math.max(state.unreadCount - 1, 0) 
+        notifications: state.notifications.filter(
+          notification => notification.id !== action.payload
+        ),
+        unreadCount: notificationToRemove && !notificationToRemove.read
+          ? Math.max(state.unreadCount - 1, 0)
           : state.unreadCount
       };
+
     case "CLEAR_ALL_NOTIFICATIONS":
       return {
         ...state,
         notifications: [],
         unreadCount: 0
       };
+
     default:
       return state;
   }
 };
 
-interface NotificationsContextType extends NotificationsState {
+type NotificationsContextType = NotificationsState & {
   addNotification: (notification: Omit<Notification, "id" | "timestamp" | "read">) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
   clearAllNotifications: () => void;
-}
+};
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
-export const useNotifications = (): NotificationsContextType => {
+export const useNotifications = () => {
   const context = useContext(NotificationsContext);
   if (!context) {
     throw new Error("useNotifications must be used within a NotificationsProvider");
@@ -100,7 +110,7 @@ export const useNotifications = (): NotificationsContextType => {
   return context;
 };
 
-export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(notificationsReducer, initialState);
 
   const addNotification = (notification: Omit<Notification, "id" | "timestamp" | "read">) => {

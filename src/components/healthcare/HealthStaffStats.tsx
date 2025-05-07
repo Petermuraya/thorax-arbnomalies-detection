@@ -66,24 +66,28 @@ export const HealthStaffStats = ({ stats, isLoading }: HealthStaffStatsProps) =>
       <StatCard 
         title="Pending Reviews"
         value={stats.pendingAnalysesCount}
+        icon={<MessageSquare className="h-5 w-5 text-amber-700" />}
         color="amber"
         isLoading={isLoading}
       />
       <StatCard 
         title="Completed Reviews"
         value={stats.completedAnalysesCount}
+        icon={<Stethoscope className="h-5 w-5 text-green-700" />}
         color="green"
         isLoading={isLoading}
       />
       <StatCard 
         title="Today's Consultations"
         value={stats.todayConsultationsCount}
+        icon={<Calendar className="h-5 w-5 text-blue-700" />}
         color="blue"
         isLoading={isLoading}
       />
       <StatCard 
         title="Total Patients"
         value={stats.totalPatientsCount}
+        icon={<Users className="h-5 w-5 text-purple-700" />}
         color="purple"
         isLoading={isLoading}
       />
@@ -94,11 +98,12 @@ export const HealthStaffStats = ({ stats, isLoading }: HealthStaffStatsProps) =>
 interface StatCardProps {
   title: string;
   value: number;
+  icon?: React.ReactNode;
   color: "blue" | "green" | "amber" | "purple";
   isLoading: boolean;
 }
 
-function StatCard({ title, value, color, isLoading }: StatCardProps) {
+function StatCard({ title, value, icon, color, isLoading }: StatCardProps) {
   const bgColor = {
     blue: "bg-blue-50",
     green: "bg-green-50",
@@ -116,12 +121,19 @@ function StatCard({ title, value, color, isLoading }: StatCardProps) {
   return (
     <Card className={`${bgColor[color]} border-none`}>
       <CardContent className="pt-6">
-        <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-        {isLoading ? (
-          <div className="h-8 w-16 bg-gray-200 animate-pulse rounded mt-1"></div>
-        ) : (
-          <p className={`text-2xl font-bold ${textColor[color]}`}>{value}</p>
-        )}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+            {isLoading ? (
+              <div className="h-8 w-16 bg-gray-200 animate-pulse rounded mt-1"></div>
+            ) : (
+              <p className={`text-2xl font-bold ${textColor[color]}`}>{value}</p>
+            )}
+          </div>
+          <div className={`p-2 rounded-full ${bgColor[color]} bg-opacity-70`}>
+            {icon}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
