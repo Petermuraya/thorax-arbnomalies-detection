@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { MessageSquare, Users, Calendar, Stethoscope } from "lucide-react";
 import { useNotify } from "@/hooks/useNotify";
 
@@ -15,11 +15,11 @@ interface HealthStaffStatsProps {
 }
 
 export const HealthStaffStats = ({ stats, isLoading }: HealthStaffStatsProps) => {
-  const { notifyInfo, notifySuccess, notifyWarning } = useNotify();
+  const { notifySuccess, notifyWarning, notifyInfo } = useNotify();
   const welcomeNotificationSent = useRef(false);
   
   useEffect(() => {
-    // Only show notifications when data is loaded and hasn't been shown yet
+    // Only show welcome notification once per session and when data is loaded
     if (!isLoading && !welcomeNotificationSent.current) {
       // Welcome notification - only show once per session
       notifySuccess(
@@ -29,11 +29,11 @@ export const HealthStaffStats = ({ stats, isLoading }: HealthStaffStatsProps) =>
       );
       welcomeNotificationSent.current = true;
       
-      // Only show these notifications if there's something to notify about and we haven't shown the welcome yet
+      // Only show these notifications if there's something to notify about
       if (stats.pendingAnalysesCount > 0) {
         notifyWarning(
           "Pending Analyses", 
-          `You have ${stats.pendingAnalysesCount} X-ray analyses waiting for your review`,
+          `You have ${stats.pendingAnalysesCount} X-ray ${stats.pendingAnalysesCount === 1 ? 'analysis' : 'analyses'} waiting for your review`,
           { 
             showToast: false,
             link: "/health-staff-dashboard?tab=pending-analysis",
@@ -45,7 +45,7 @@ export const HealthStaffStats = ({ stats, isLoading }: HealthStaffStatsProps) =>
       if (stats.todayConsultationsCount > 0) {
         notifyInfo(
           "Today's Schedule", 
-          `You have ${stats.todayConsultationsCount} consultations scheduled for today`,
+          `You have ${stats.todayConsultationsCount} ${stats.todayConsultationsCount === 1 ? 'consultation' : 'consultations'} scheduled for today`,
           { 
             showToast: false,
             link: "/health-staff-dashboard?tab=consultations",

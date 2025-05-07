@@ -5,10 +5,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, FileText, Save } from "lucide-react";
+import { Eye, FileText, Save, Calendar, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useHealthcareStaff } from "@/hooks/useHealthcareStaff";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNotify } from "@/hooks/useNotify";
 
 interface PendingAnalysisTableProps {
   analyses: ChestAnalysis[];
@@ -20,11 +22,15 @@ export function PendingAnalysisTable({ analyses, isLoading }: PendingAnalysisTab
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [doctorNotes, setDoctorNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const { updateAnalysis } = useHealthcareStaff();
+  const [showConsultationForm, setShowConsultationForm] = useState(false);
+  const [consultationDate, setConsultationDate] = useState("");
+  const { updateAnalysis, scheduleConsultation } = useHealthcareStaff();
+  const { notifyInfo } = useNotify();
 
   const openAnalysis = async (analysis: ChestAnalysis) => {
     setSelectedAnalysis(analysis);
     setDoctorNotes(analysis.doctor_notes || "");
+    setShowConsultationForm(false);
     
     // Get image URL
     if (analysis.image_path) {
@@ -42,7 +48,52 @@ export function PendingAnalysisTable({ analyses, isLoading }: PendingAnalysisTab
     setIsSaving(true);
     const success = await updateAnalysis(selectedAnalysis.id, doctorNotes);
     if (success) {
+      toast.success("Analysis review submitted successfully");
+      // Notify the patient
+      notifyInfo(
+        "Analysis Reviewed", 
+        "Your chest X-ray has been reviewed by a healthcare professional",
+        {
+          targetUserId: selectedAnalysis.user_id,
+          showToast: false,
+          link: "/patient-dashboard?tab=reports",
+          actionText: "View Results"
+        }
+      );
       setSelectedAnalysis(null);
+    }
+    setIsSaving(false);
+  };
+
+  const toggleConsultationForm = () => {
+    setShowConsultationForm(!showConsultationForm);
+  };
+
+  const handleScheduleConsultation = async () => {
+    if (!selectedAnalysis || !consultationDate) {
+      toast.error("Please select a valid date and time");
+      return;
+    }
+    
+    setIsSaving(true);
+    const success = await scheduleConsultation(
+      selectedAnalysis.user_id, 
+      new Date(consultationDate).toISOString()
+    );
+    
+    if (success) {
+      toast.success("Consultation scheduled successfully");
+      notifyInfo(
+        "Consultation Scheduled", 
+        "A healthcare professional has scheduled a consultation with you",
+        {
+          targetUserId: selectedAnalysis.user_id, 
+          showToast: false,
+          link: "/patient-dashboard?tab=consultations",
+          actionText: "View Details"
+        }
+      );
+      setShowConsultationForm(false);
     }
     setIsSaving(false);
   };
@@ -160,7 +211,16 @@ export function PendingAnalysisTable({ analyses, isLoading }: PendingAnalysisTab
                 />
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-between pt-2">
+                <Button
+                  variant="outline"
+                  onClick={toggleConsultationForm}
+                  className="flex items-center gap-2"
+                >
+                  <Calendar className="h-4 w-4" />
+                  Schedule Consultation
+                </Button>
+                
                 <Button
                   onClick={handleSave}
                   disabled={isSaving}
@@ -170,6 +230,31 @@ export function PendingAnalysisTable({ analyses, isLoading }: PendingAnalysisTab
                   {isSaving ? "Saving..." : "Save Review"}
                 </Button>
               </div>
+              
+              {showConsultationForm && (
+                <div className="mt-4 p-4 border rounded-md bg-slate-50">
+                  <h3 className="font-medium mb-2">Schedule Consultation with Patient</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-gray-500 mb-1">Date and Time</label>
+                      <input
+                        type="datetime-local"
+                        className="w-full border rounded p-2"
+                        value={consultationDate}
+                        onChange={(e) => setConsultationDate(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      onClick={handleScheduleConsultation}
+                      disabled={isSaving || !consultationDate}
+                      className="w-full"
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Schedule Appointment
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>

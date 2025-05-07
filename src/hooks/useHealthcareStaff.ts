@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth";
@@ -227,6 +228,32 @@ export const useHealthcareStaff = () => {
     }
   };
 
+  const scheduleConsultation = async (patientId: string, scheduledFor: string) => {
+    if (!user?.id) return false;
+    
+    try {
+      const { error } = await supabase
+        .from("consultations")
+        .insert({
+          doctor_id: user.id,
+          patient_id: patientId,
+          scheduled_for: scheduledFor,
+          status: "scheduled"
+        });
+
+      if (error) throw error;
+      
+      toast.success("Consultation scheduled successfully");
+      
+      await fetchData();
+      return true;
+    } catch (error) {
+      console.error("Error scheduling consultation:", error);
+      toast.error("Failed to schedule consultation. Please try again.");
+      return false;
+    }
+  };
+
   // Set up realtime subscription for new analyses
   useEffect(() => {
     if (!user?.id) return;
@@ -280,6 +307,7 @@ export const useHealthcareStaff = () => {
     error,
     refreshData: fetchData,
     stats,
-    updateAnalysis
+    updateAnalysis,
+    scheduleConsultation
   };
 };
