@@ -50,15 +50,23 @@ export function PatientConsultations() {
               .eq("id", consultation.patient_id)
               .single();
             
+            // Cast the status to the correct type
+            const typedStatus = (consultation.status || 'scheduled') as 'scheduled' | 'completed' | 'cancelled';
+            
             return {
               ...consultation,
+              status: typedStatus,
               patient_name: profileData?.full_name || "Unknown Patient"
-            };
+            } as Consultation;
           } catch (error) {
+            // Cast the status to the correct type
+            const typedStatus = (consultation.status || 'scheduled') as 'scheduled' | 'completed' | 'cancelled';
+            
             return {
               ...consultation,
+              status: typedStatus,
               patient_name: "Unknown Patient"
-            };
+            } as Consultation;
           }
         }));
 

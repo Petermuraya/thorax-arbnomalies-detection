@@ -15,6 +15,10 @@ interface NotifyOptions {
    * Text for the action button
    */
   actionText?: string;
+  /**
+   * Optional user ID to target the notification to (for sending notifications to other users)
+   */
+  targetUserId?: string;
 }
 
 export const useNotify = () => {
@@ -32,7 +36,8 @@ export const useNotify = () => {
       message,
       type,
       link: options.link,
-      actionText: options.actionText
+      actionText: options.actionText,
+      targetUserId: options.targetUserId
     });
 
     // Also show toast if requested

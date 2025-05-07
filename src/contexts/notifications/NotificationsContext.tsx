@@ -13,6 +13,7 @@ export interface Notification {
   read: boolean;
   link?: string;
   actionText?: string;
+  targetUserId?: string;
 }
 
 type NotificationsState = {
