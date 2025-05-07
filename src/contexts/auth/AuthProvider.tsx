@@ -1,7 +1,7 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Role, UserRoles } from "@/types/roles";
 import { AuthContextType } from "./types";
@@ -14,7 +14,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener first
@@ -25,43 +24,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(currentSession?.user ?? null);
         setLoading(false);
 
-        // Use setTimeout to avoid navigation issues
         if (event === 'SIGNED_IN') {
-          setTimeout(() => {
-            // Check if user has metadata, if not (Google sign-in) fetch from profiles table
-            if (currentSession?.user) {
-              // Check for roles or legacy role in metadata
-              const userRoles = resolveUserRoles(currentSession.user);
-              
-              // If this is a new Google signup, check for stored role preference
-              if (event === 'SIGNED_IN' && !currentSession.user.user_metadata?.roles && !currentSession.user.user_metadata?.role) {
-                const storedRole = localStorage.getItem("signupRole");
-                if (storedRole && VALID_USER_ROLES.includes(storedRole as Role)) {
-                  const newRoles = { [storedRole as Role]: true };
-                  
-                  // Clear stored role
-                  localStorage.removeItem("signupRole");
-                  
-                  // Update user metadata with the selected role
-                  supabase.auth.updateUser({
-                    data: { roles: newRoles }
-                  }).catch(error => {
-                    console.error("Error updating user roles:", error);
-                  });
-                }
+          // Check if user has metadata, if not (Google sign-in) fetch from profiles table
+          if (currentSession?.user) {
+            // Check for roles or legacy role in metadata
+            const userRoles = resolveUserRoles(currentSession.user);
+            
+            // If this is a new Google signup, check for stored role preference
+            if (event === 'SIGNED_IN' && !currentSession.user.user_metadata?.roles && !currentSession.user.user_metadata?.role) {
+              const storedRole = localStorage.getItem("signupRole");
+              if (storedRole && VALID_USER_ROLES.includes(storedRole as Role)) {
+                const newRoles = { [storedRole as Role]: true };
+                
+                // Clear stored role
+                localStorage.removeItem("signupRole");
+                
+                // Update user metadata with the selected role
+                supabase.auth.updateUser({
+                  data: { roles: newRoles }
+                }).catch(error => {
+                  console.error("Error updating user roles:", error);
+                });
               }
-              
-              toast.success(`Welcome back, ${currentSession.user.user_metadata?.full_name || currentSession.user.email}`);
-              
-              // Navigate based on roles priority
-              navigate(getDashboardRoute(userRoles));
             }
-          }, 0);
+            
+            toast.success(`Welcome back, ${currentSession.user.user_metadata?.full_name || currentSession.user.email}`);
+          }
         } else if (event === 'SIGNED_OUT') {
-          setTimeout(() => {
-            toast.info("You have been signed out");
-            navigate('/login');
-          }, 0);
+          toast.info("You have been signed out");
         } else if (event === 'USER_UPDATED') {
           // Refresh user data
           setUser(currentSession?.user ?? null);
@@ -78,7 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
