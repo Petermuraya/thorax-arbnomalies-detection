@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { toast } from 'sonner';
+import { useNotify } from '@/hooks/useNotify';
 
 export interface ChestAnalysis {
   id: string;
@@ -17,6 +18,7 @@ export const useChestAnalysis = () => {
   const [analyses, setAnalyses] = useState<ChestAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { notifyInfo } = useNotify();
 
   useEffect(() => {
     if (!user) return;
@@ -55,12 +57,32 @@ export const useChestAnalysis = () => {
         (payload) => {
           if (payload.eventType === 'INSERT') {
             setAnalyses((current) => [payload.new as ChestAnalysis, ...current]);
+            
+            // Notify healthcare staff about new analysis
+            notifyInfo(
+              "New X-ray Submitted", 
+              "Your X-ray has been submitted and is awaiting professional review",
+              { showToast: true }
+            );
           } else if (payload.eventType === 'UPDATE') {
             setAnalyses((current) =>
               current.map((analysis) =>
                 analysis.id === payload.new.id ? { ...payload.new as ChestAnalysis } : analysis
               )
             );
+            
+            // If status changed to reviewed, notify the user
+            if (payload.new.status === 'reviewed' && payload.old.status === 'pending') {
+              notifyInfo(
+                "X-ray Review Complete", 
+                "A healthcare professional has reviewed your X-ray analysis",
+                { 
+                  showToast: true,
+                  link: "/patient-dashboard?tab=reports",
+                  actionText: "View Results"
+                }
+              );
+            }
           }
         }
       )
@@ -69,7 +91,7 @@ export const useChestAnalysis = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, notifyInfo]);
 
   const uploadImage = async (file: File) => {
     if (!user) {
@@ -102,6 +124,15 @@ export const useChestAnalysis = () => {
       if (insertError) throw insertError;
 
       toast.success('X-ray uploaded successfully');
+      
+      // Notify healthcare staff about new analysis (this will be duplicated by the realtime subscription)
+      // But we keep it here in case the realtime subscription fails
+      notifyInfo(
+        "New X-ray Submitted", 
+        "Your X-ray has been submitted and is awaiting professional review",
+        { showToast: true }
+      );
+      
       return data;
     } catch (error) {
       console.error('Error uploading image:', error);

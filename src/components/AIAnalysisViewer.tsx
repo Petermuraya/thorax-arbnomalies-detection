@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Activity } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useNotify } from "@/hooks/useNotify";
 
 interface AIAnalysisViewerProps {
   imageUrl: string;
@@ -14,6 +15,7 @@ const AIAnalysisViewer = ({ imageUrl, onAnalysisComplete }: AIAnalysisViewerProp
   const [analyzing, setAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const { notifyInfo } = useNotify();
   
   const startAnalysis = () => {
     setAnalyzing(true);
@@ -40,6 +42,13 @@ const AIAnalysisViewer = ({ imageUrl, onAnalysisComplete }: AIAnalysisViewerProp
         const randomResult = results[Math.floor(Math.random() * results.length)];
         setAnalysisResult(randomResult);
         onAnalysisComplete(randomResult);
+        
+        // Notify healthcare staff about completed analysis
+        notifyInfo(
+          "AI Analysis Complete", 
+          "Your X-ray has been analyzed by our AI system and sent for professional review",
+          { showToast: true }
+        );
         
         // End analyzing state after a slight delay
         setTimeout(() => {
