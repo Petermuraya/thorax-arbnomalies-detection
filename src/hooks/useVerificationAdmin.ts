@@ -29,13 +29,20 @@ export const useVerificationAdmin = () => {
   const fetchVerifications = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch all verifications first without trying to join with profiles
+      console.log('Fetching verifications...');
+      
+      // Fetch all verifications first with proper ordering
       const { data, error } = await supabase
         .from('healthcare_verification')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching verifications:', error);
+        throw error;
+      }
+      
+      console.log('Fetched verifications:', data?.length || 0);
 
       // Transform data to include proper typing for status
       const transformedData = data.map(item => ({
@@ -44,8 +51,8 @@ export const useVerificationAdmin = () => {
         user_name: 'Unknown User' // Default name
       }));
 
-      // Get user profiles in a separate query
-      for (const item of transformedData) {
+      // Get user profiles in a separate query for each verification
+      const profilePromises = transformedData.map(async (item) => {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('full_name')
@@ -54,16 +61,24 @@ export const useVerificationAdmin = () => {
 
         if (!profileError && profileData) {
           item.user_name = profileData.full_name || 'Unknown User';
+        } else if (profileError) {
+          console.warn(`Could not fetch profile for user ${item.user_id}:`, profileError);
         }
-      }
+        return item;
+      });
 
-      setVerifications(transformedData as VerificationItem[]);
+      // Wait for all profile data to be fetched
+      const verificationWithProfiles = await Promise.all(profilePromises);
+      
+      setVerifications(verificationWithProfiles as VerificationItem[]);
 
       // Calculate counts
-      const pending = transformedData.filter(v => v.status === 'pending').length;
-      const approved = transformedData.filter(v => v.status === 'approved').length;
-      const rejected = transformedData.filter(v => v.status === 'rejected').length;
+      const pending = verificationWithProfiles.filter(v => v.status === 'pending').length;
+      const approved = verificationWithProfiles.filter(v => v.status === 'approved').length;
+      const rejected = verificationWithProfiles.filter(v => v.status === 'rejected').length;
 
+      console.log('Verification counts:', { pending, approved, rejected });
+      
       setPendingCount(pending);
       setApprovedCount(approved);
       setRejectedCount(rejected);

@@ -8,6 +8,7 @@ import { VerificationStats } from "@/components/admin/VerificationStats";
 import { VerificationTable } from "@/components/admin/VerificationTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -28,6 +29,22 @@ const AdminDashboard = () => {
       navigate('/login');
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    // Force refresh verifications when the component mounts
+    refreshVerifications().catch(err => {
+      console.error("Error refreshing verifications:", err);
+      toast.error("Failed to load verification data");
+    });
+    
+    // Log initial counts for debugging
+    console.log("Initial verification data:", { 
+      total: verifications.length,
+      pendingCount, 
+      approvedCount, 
+      rejectedCount 
+    });
+  }, [refreshVerifications]);
 
   const handleApprove = async (id: string, notes?: string) => {
     await updateVerificationStatus(id, 'approved', notes);
