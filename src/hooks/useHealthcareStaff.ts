@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth";
@@ -17,7 +16,8 @@ import {
   addPatientNameToConsultations 
 } from "@/utils/healthcareUtils";
 
-export { ChestAnalysis, Consultation } from "@/types/healthcare";
+// Fix: Changed from export { ChestAnalysis, Consultation } to export type
+export type { ChestAnalysis, Consultation } from "@/types/healthcare";
 
 export const useHealthcareStaff = () => {
   const [pendingAnalyses, setPendingAnalyses] = useState<ChestAnalysis[]>([]);
