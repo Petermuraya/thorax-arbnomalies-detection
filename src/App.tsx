@@ -20,6 +20,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import AdminSignup from "./components/auth/AdminSignup";
 import SuperuserCreation from "./pages/SuperuserCreation";
+import VerificationStatusPage from "./pages/VerificationStatusPage";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,16 @@ const App = () => (
             
             {/* Superuser Creation */}
             <Route path="/create-superuser" element={<SuperuserCreation />} />
+            
+            {/* Verification Status Page */}
+            <Route 
+              path="/verification-status" 
+              element={
+                <ProtectedRoute>
+                  <VerificationStatusPage />
+                </ProtectedRoute>
+              }
+            />
             
             {/* Protected routes with role-based access */}
             <Route 

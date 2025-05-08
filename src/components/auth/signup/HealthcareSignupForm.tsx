@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
@@ -16,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 const healthcareSignupSchema = z.object({
   fullName: z.string().min(2, {
@@ -61,7 +64,7 @@ export const HealthcareSignupForm = () => {
         full_name: values.fullName,
         roles: { healthstaff: true },
       });
-      toast.success("Account created! Please check your email to verify.");
+      toast.success("Account created! Please check your email to verify, then login to complete your verification.");
     } catch (error: any) {
       console.error("Signup error:", error);
       toast.error(error.message || "Something went wrong. Please try again.");
@@ -72,6 +75,13 @@ export const HealthcareSignupForm = () => {
 
   return (
     <Form {...form}>
+      <Alert className="mb-6 bg-blue-50 border-blue-200">
+        <InfoIcon className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-blue-700">
+          After creating your account and verifying your email, you will need to login and submit your professional credentials for review. You'll be able to track your verification status and update your profile while waiting for approval.
+        </AlertDescription>
+      </Alert>
+      
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}

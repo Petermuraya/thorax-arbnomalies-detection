@@ -1,14 +1,14 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
+import { VerificationItem } from './useVerificationAdmin';
 
 interface VerificationData {
   id?: string;
   user_id: string;
   license_number: string;
   specialization: string;
-  document_path: string; // Changed from optional to required to match the database structure
+  document_path: string;
   status: 'pending' | 'approved' | 'rejected';
   reviewer_notes?: string;
   reviewer_id?: string;
@@ -35,7 +35,6 @@ export const useHealthcareVerification = () => {
     }
 
     try {
-      // Call the Supabase function to verify healthcare professional status
       const { data, error } = await supabase.functions.invoke('verify-healthcare-professional', {
         body: {
           user_id: user.id,
@@ -69,7 +68,6 @@ export const useHealthcareVerification = () => {
     try {
       setIsVerifying(true);
       
-      // Upload document
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `verifications/${fileName}`;
@@ -80,7 +78,6 @@ export const useHealthcareVerification = () => {
         
       if (uploadError) throw uploadError;
       
-      // Create verification record - Fixed table name from "healthcare_verifications" to "healthcare_verification"
       const verificationData: VerificationData = {
         user_id: user.id,
         license_number: licenseNumber,
@@ -90,21 +87,19 @@ export const useHealthcareVerification = () => {
       };
       
       const { data, error } = await supabase
-        .from('healthcare_verification') // Fixed table name
+        .from('healthcare_verification')
         .insert(verificationData)
         .select()
         .single();
         
       if (error) throw error;
       
-      // Get document URL
       const { data: urlData } = supabase.storage
         .from('healthcare_documents')
         .getPublicUrl(filePath);
         
       setDocumentUrl(urlData.publicUrl);
       
-      // Fixed type issue by properly casting the data to VerificationData
       if (data) {
         const typedData = data as unknown as VerificationData;
         setVerification(typedData);
@@ -120,6 +115,44 @@ export const useHealthcareVerification = () => {
     }
   };
 
+  const fetchVerificationStatus = async (): Promise<{ data: VerificationItem[] | null; error: any }> => {
+    if (!user?.id) {
+      return { data: null, error: new Error("User ID not found. Please ensure you are logged in.") };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('healthcare_verification')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      
+      if (data && data.length > 0 && data[0].document_path) {
+        const { data: urlData } = supabase.storage
+          .from('healthcare_documents')
+          .getPublicUrl(data[0].document_path);
+          
+        setDocumentUrl(urlData.publicUrl);
+      }
+      
+      if (data && data.length > 0) {
+        setVerification(data[0] as VerificationData);
+        setIsVerified(data[0].status === 'approved');
+      }
+      
+      return { 
+        data: data as unknown as VerificationItem[], 
+        error: null 
+      };
+    } catch (err) {
+      console.error("Error fetching verification status:", err);
+      setVerificationError("Failed to fetch verification status.");
+      return { data: null, error: err };
+    }
+  };
+
   return {
     verifyHealthcareProfessional,
     isVerifying,
@@ -127,6 +160,7 @@ export const useHealthcareVerification = () => {
     isVerified,
     verification,
     documentUrl,
-    submitVerification
+    submitVerification,
+    fetchVerificationStatus
   };
 };
