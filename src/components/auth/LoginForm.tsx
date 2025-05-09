@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, LogIn } from "lucide-react";
-import { PasswordInput } from "@/components/auth/shared/PasswordInput";
-import { IconInput } from "@/components/auth/shared/IconInput";
+import { IconInput } from "@/components/auth/login/IconInput";
 import { GoogleLoginButton } from "@/components/auth/login/GoogleLoginButton";
 import { useAuth } from "@/contexts/auth";
 
@@ -19,6 +18,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
 
@@ -57,7 +57,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
             onChange={(e) => setEmail(e.target.value)}
             icon={<Mail className="h-5 w-5 text-blue-400" />}
             placeholder="name@company.com"
-            className="pl-10 border-blue-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+            className="border-blue-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
             autoComplete="email"
             required
           />
@@ -75,13 +75,30 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
               Forgot password?
             </Link>
           </div>
-          <PasswordInput
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border-blue-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
-            required
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pr-10 border-blue-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5 text-blue-400 hover:text-blue-600 transition-colors" />
+              ) : (
+                <Eye className="h-5 w-5 text-blue-400 hover:text-blue-600 transition-colors" />
+              )}
+            </button>
+          </div>
         </div>
         
         <div className="flex items-center justify-between">

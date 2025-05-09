@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Button } from "@/components/ui/button";
-import { Check, AlertTriangle, Upload, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import { StatusDisplay } from '@/components/verification/StatusDisplay';
+import { DocumentUploader } from '@/components/verification/DocumentUploader';
 
 const VerificationStatusPage = () => {
   const { user } = useAuth();
@@ -16,35 +18,35 @@ const VerificationStatusPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchVerificationStatus = async () => {
-      if (!user) return;
-
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('healthcare_verification')
-          .select('status')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (error) {
-          console.error("Error fetching verification status:", error);
-          toast.error("Failed to fetch verification status.");
-          setVerificationStatus(null);
-        } else if (data) {
-          setVerificationStatus(data.status);
-        } else {
-          setVerificationStatus(null); // No verification record found
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchVerificationStatus();
   }, [user]);
+
+  const fetchVerificationStatus = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('healthcare_verification')
+        .select('status')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Error fetching verification status:", error);
+        toast.error("Failed to fetch verification status.");
+        setVerificationStatus(null);
+      } else if (data) {
+        setVerificationStatus(data.status);
+      } else {
+        setVerificationStatus(null); // No verification record found
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -118,58 +120,31 @@ const VerificationStatusPage = () => {
           <Loader2 className="animate-spin h-6 w-6 text-blue-500" />
           <span className="ml-2">Checking status...</span>
         </div>
-      ) : verificationStatus === 'approved' ? (
-        <div className="text-center">
-          <Check className="mx-auto h-12 w-12 text-green-500 mb-2" />
-          <p className="text-green-600 font-medium">Your account is verified!</p>
-        </div>
-      ) : verificationStatus === 'pending' ? (
-        <div className="text-center">
-          <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500 mb-2" />
-          <p className="text-yellow-600 font-medium">Your verification is pending review.</p>
-        </div>
-      ) : verificationStatus === 'rejected' ? (
-        <div className="text-center">
-          <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-2" />
-          <p className="text-red-600 font-medium">Your verification was rejected. Please upload a valid document.</p>
-          
-          <div className="mt-4">
-            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="mb-2" />
-            {uploadError && <p className="text-red-500 text-sm">{uploadError}</p>}
-            <Button onClick={handleUpload} disabled={uploading} className="bg-blue-500 text-white">
-              {uploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Document
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
       ) : (
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Please upload your healthcare license or relevant document for verification.</p>
-          <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="mb-2" />
-          {uploadError && <p className="text-red-500 text-sm">{uploadError}</p>}
-          <Button onClick={handleUpload} disabled={uploading} className="bg-blue-500 text-white">
-            {uploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Document
-              </>
-            )}
-          </Button>
-        </div>
+        <>
+          <StatusDisplay status={verificationStatus as 'approved' | 'pending' | 'rejected' | null} />
+          
+          {verificationStatus === 'rejected' && (
+            <DocumentUploader 
+              error={uploadError}
+              uploading={uploading}
+              onFileChange={handleFileChange}
+              onUpload={handleUpload}
+            />
+          )}
+          
+          {!verificationStatus && (
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Please upload your healthcare license or relevant document for verification.</p>
+              <DocumentUploader 
+                error={uploadError}
+                uploading={uploading}
+                onFileChange={handleFileChange}
+                onUpload={handleUpload}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
