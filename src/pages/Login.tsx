@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Eye, EyeOff, Mail, LogIn } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/auth";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -34,8 +35,8 @@ const Login = () => {
     const redirectLoggedInUser = async () => {
       if (user) {
         const role = user.user_metadata?.role || user.user_metadata?.roles?.patient ? 'patient' : 
-                      user.user_metadata?.roles?.healthstaff ? 'healthstaff' : 
-                      user.user_metadata?.roles?.admin ? 'admin' : 'patient';
+                    user.user_metadata?.roles?.healthstaff ? 'healthstaff' : 
+                    user.user_metadata?.roles?.admin ? 'admin' : 'patient';
         
         // For healthcare staff, check verification status
         if (role === 'healthstaff' || user.user_metadata?.roles?.healthstaff) {
