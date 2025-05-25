@@ -63,23 +63,33 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// X-ray Insight specific colors
+				// Modern color palette - removed yellows
 				medical: {
 					blue: {
-						light: '#4285F4',
-						DEFAULT: '#0077CC',
-						dark: '#005599'
+						light: '#60A5FA',
+						DEFAULT: '#3B82F6',
+						dark: '#2563EB'
 					},
 					teal: {
-						light: '#42E9D9',
-						DEFAULT: '#20C997',
-						dark: '#0D9B79'
+						light: '#5EEAD4',
+						DEFAULT: '#14B8A6',
+						dark: '#0F766E'
 					},
 					gray: {
-						lightest: '#F8F9FA',
-						light: '#E9ECEF',
-						DEFAULT: '#6C757D',
-						dark: '#343A40'
+						lightest: '#F8FAFC',
+						light: '#E2E8F0',
+						DEFAULT: '#64748B',
+						dark: '#334155'
+					},
+					purple: {
+						light: '#A78BFA',
+						DEFAULT: '#8B5CF6',
+						dark: '#7C3AED'
+					},
+					green: {
+						light: '#86EFAC',
+						DEFAULT: '#22C55E',
+						dark: '#16A34A'
 					}
 				}
 			},
@@ -108,12 +118,36 @@ export default {
 				'pulse-slow': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.7' },
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0) translateX(0)' },
+					'50%': { transform: 'translateY(-20px) translateX(10px)' },
+				},
+				'float-slow': {
+					'0%, 100%': { transform: 'translateY(0) translateX(0)' },
+					'50%': { transform: 'translateY(10px) translateX(-15px)' },
+				},
+				'bounce-horizontal': {
+					'0%, 100%': { transform: 'translateX(0)' },
+					'50%': { transform: 'translateX(5px)' },
+				},
+				'shimmer': {
+					'0%': { transform: 'translateX(-100%)' },
+					'100%': { transform: 'translateX(100%)' },
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+				'float': 'float 8s ease-in-out infinite',
+				'float-slow': 'float-slow 10s ease-in-out infinite',
+				'bounce-horizontal': 'bounce-horizontal 2s ease-in-out infinite',
+				'shimmer': 'shimmer 2s infinite',
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
 			}
 		}
 	},

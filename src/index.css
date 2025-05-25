@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 255 255 255;
+    --background: 248 250 252;
     --foreground: 15 23 42;
 
     --card: 255 255 255;
@@ -23,7 +23,7 @@
     --muted: 248 250 252;
     --muted-foreground: 100 116 139;
 
-    --accent: 241 245 249;
+    --accent: 239 246 255;
     --accent-foreground: 15 23 42;
 
     --destructive: 239 68 68;
@@ -46,13 +46,13 @@
   }
 
   .dark {
-    --background: 3 7 18;
+    --background: 2 6 23;
     --foreground: 248 250 252;
 
-    --card: 13 18 30;
+    --card: 15 23 42;
     --card-foreground: 248 250 252;
 
-    --popover: 13 18 30;
+    --popover: 15 23 42;
     --popover-foreground: 248 250 252;
 
     --primary: 59 130 246;
@@ -74,7 +74,7 @@
     --input: 30 41 59;
     --ring: 59 130 246;
 
-    --sidebar-background: 13 18 30;
+    --sidebar-background: 15 23 42;
     --sidebar-foreground: 248 250 252;
     --sidebar-primary: 59 130 246;
     --sidebar-primary-foreground: 248 250 252;
@@ -89,94 +89,170 @@
   }
 
   body {
-    background-color: hsl(var(--background));
+    background: linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      hsl(var(--muted)) 25%, 
+      hsl(var(--background)) 50%, 
+      hsl(var(--accent)) 75%, 
+      hsl(var(--background)) 100%);
+    background-attachment: fixed;
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
+    min-height: 100vh;
   }
 
   html {
     scroll-behavior: smooth;
   }
 
-  /* Custom scrollbar */
+  /* Modern glassmorphism scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 12px;
+    height: 12px;
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-    border-radius: 4px;
+    background: rgba(248, 250, 252, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
+    background: linear-gradient(45deg, 
+      hsl(var(--primary) / 0.6), 
+      hsl(var(--primary) / 0.8));
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: all 0.3s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
+    background: linear-gradient(45deg, 
+      hsl(var(--primary) / 0.8), 
+      hsl(var(--primary)));
+    transform: scale(1.1);
   }
 
-  /* Smooth animations */
+  /* Enhanced animations */
   .animate-fade-in {
-    animation: fadeIn 0.6s ease-out forwards;
+    animation: modernFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-slide-up {
-    animation: slideUp 0.6s ease-out forwards;
+    animation: modernSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-scale-in {
-    animation: scaleIn 0.4s ease-out forwards;
+    animation: modernScaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  @keyframes fadeIn {
+  @keyframes modernFadeIn {
     from {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(30px) scale(0.98);
+      filter: blur(10px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
+      filter: blur(0);
     }
   }
 
-  @keyframes slideUp {
+  @keyframes modernSlideUp {
     from {
       opacity: 0;
-      transform: translateY(40px);
+      transform: translateY(50px) rotateX(10deg);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) rotateX(0deg);
     }
   }
 
-  @keyframes scaleIn {
+  @keyframes modernScaleIn {
     from {
       opacity: 0;
-      transform: scale(0.95);
+      transform: scale(0.9) rotateY(10deg);
     }
     to {
       opacity: 1;
-      transform: scale(1);
+      transform: scale(1) rotateY(0deg);
     }
   }
 
-  /* GitHub-style focus rings */
+  /* Modern focus rings */
   .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background transition-all duration-200;
   }
 
-  /* Modern card styles */
+  /* Glassmorphism card styles */
   .modern-card {
-    @apply bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:border-primary/20;
+    background: linear-gradient(145deg, 
+      hsl(var(--card) / 0.9), 
+      hsl(var(--card) / 0.7));
   }
 
-  /* Gradient backgrounds */
+  /* Advanced gradient backgrounds */
   .gradient-bg {
-    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    background: linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      hsl(var(--accent)) 25%, 
+      hsl(var(--background)) 50%, 
+      hsl(var(--muted)) 75%, 
+      hsl(var(--background)) 100%);
+    position: relative;
   }
-}
+
+  .gradient-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 80%, hsl(var(--primary) / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(var(--accent)) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, hsl(var(--muted)) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Grid pattern overlay */
+  .bg-grid-pattern {
+    background-image: 
+      linear-gradient(hsl(var(--border) / 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Smooth hover effects */
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/25;
+  }
+
+  /* Modern button styles */
+  .btn-modern {
+    @apply relative overflow-hidden bg-gradient-to-r from-primary to-blue-600 text-primary-foreground font-semibold py-2 px-6 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25;
+  }
+
+  .btn-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-modern:hover::before {
+    left: 100%;
+  }
