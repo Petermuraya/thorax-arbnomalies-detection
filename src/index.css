@@ -5,26 +5,26 @@
 
 @layer base {
   :root {
-    --background: 248 250 252;
-    --foreground: 15 23 42;
+    --background: 220 226 237;
+    --foreground: 30 41 59;
 
     --card: 255 255 255;
-    --card-foreground: 15 23 42;
+    --card-foreground: 30 41 59;
 
     --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
+    --popover-foreground: 30 41 59;
 
     --primary: 59 130 246;
     --primary-foreground: 248 250 252;
 
     --secondary: 241 245 249;
-    --secondary-foreground: 15 23 42;
+    --secondary-foreground: 30 41 59;
 
     --muted: 248 250 252;
     --muted-foreground: 100 116 139;
 
     --accent: 239 246 255;
-    --accent-foreground: 15 23 42;
+    --accent-foreground: 30 41 59;
 
     --destructive: 239 68 68;
     --destructive-foreground: 248 250 252;
@@ -36,52 +36,52 @@
     --radius: 0.5rem;
 
     --sidebar-background: 248 250 252;
-    --sidebar-foreground: 15 23 42;
+    --sidebar-foreground: 30 41 59;
     --sidebar-primary: 59 130 246;
     --sidebar-primary-foreground: 248 250 252;
     --sidebar-accent: 241 245 249;
-    --sidebar-accent-foreground: 15 23 42;
+    --sidebar-accent-foreground: 30 41 59;
     --sidebar-border: 226 232 240;
     --sidebar-ring: 59 130 246;
   }
 
   .dark {
-    --background: 2 6 23;
+    --background: 15 23 42;
     --foreground: 248 250 252;
 
-    --card: 15 23 42;
+    --card: 30 41 59;
     --card-foreground: 248 250 252;
 
-    --popover: 15 23 42;
+    --popover: 30 41 59;
     --popover-foreground: 248 250 252;
 
-    --primary: 59 130 246;
+    --primary: 99 102 241;
     --primary-foreground: 248 250 252;
 
-    --secondary: 30 41 59;
+    --secondary: 51 65 85;
     --secondary-foreground: 248 250 252;
 
-    --muted: 30 41 59;
+    --muted: 51 65 85;
     --muted-foreground: 148 163 184;
 
-    --accent: 30 41 59;
+    --accent: 51 65 85;
     --accent-foreground: 248 250 252;
 
     --destructive: 239 68 68;
     --destructive-foreground: 248 250 252;
 
-    --border: 30 41 59;
-    --input: 30 41 59;
-    --ring: 59 130 246;
+    --border: 51 65 85;
+    --input: 51 65 85;
+    --ring: 99 102 241;
 
-    --sidebar-background: 15 23 42;
+    --sidebar-background: 30 41 59;
     --sidebar-foreground: 248 250 252;
-    --sidebar-primary: 59 130 246;
+    --sidebar-primary: 99 102 241;
     --sidebar-primary-foreground: 248 250 252;
-    --sidebar-accent: 30 41 59;
+    --sidebar-accent: 51 65 85;
     --sidebar-accent-foreground: 248 250 252;
-    --sidebar-border: 30 41 59;
-    --sidebar-ring: 59 130 246;
+    --sidebar-border: 51 65 85;
+    --sidebar-ring: 99 102 241;
   }
 
   * {
@@ -91,9 +91,9 @@
   body {
     background: linear-gradient(135deg, 
       hsl(var(--background)) 0%, 
-      hsl(var(--muted)) 25%, 
-      hsl(var(--background)) 50%, 
-      hsl(var(--accent)) 75%, 
+      hsl(220 226 237) 25%, 
+      hsl(239 246 255) 50%, 
+      hsl(219 234 254) 75%, 
       hsl(var(--background)) 100%);
     background-attachment: fixed;
     color: hsl(var(--foreground));
@@ -199,9 +199,9 @@
   .gradient-bg {
     background: linear-gradient(135deg, 
       hsl(var(--background)) 0%, 
-      hsl(var(--accent)) 25%, 
-      hsl(var(--background)) 50%, 
-      hsl(var(--muted)) 75%, 
+      hsl(220 226 237) 25%, 
+      hsl(239 246 255) 50%, 
+      hsl(219 234 254) 75%, 
       hsl(var(--background)) 100%);
     position: relative;
   }
@@ -215,8 +215,8 @@
     bottom: 0;
     background: 
       radial-gradient(circle at 20% 80%, hsl(var(--primary) / 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(var(--accent)) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, hsl(var(--muted)) 0%, transparent 50%);
+      radial-gradient(circle at 80% 20%, hsl(220 226 237) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, hsl(239 246 255) 0%, transparent 50%);
     pointer-events: none;
   }
 
@@ -256,3 +256,4 @@
   .btn-modern:hover::before {
     left: 100%;
   }
+}
