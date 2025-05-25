@@ -9,9 +9,11 @@ interface LayoutProps {
 
 export const LandingLayout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <Navbar />
-      {children}
+      <main className="flex-1 animate-fade-in">
+        {children}
+      </main>
       <Footer />
     </div>
   );

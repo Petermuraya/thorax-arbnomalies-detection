@@ -112,40 +112,44 @@ const VerificationStatusPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-8 flex flex-col items-center">
-      <h1 className="text-2xl font-semibold mb-4 text-blue-700">Verification Status</h1>
-      
-      {isLoading ? (
-        <div className="flex items-center justify-center">
-          <Loader2 className="animate-spin h-6 w-6 text-blue-500" />
-          <span className="ml-2">Checking status...</span>
-        </div>
-      ) : (
-        <>
-          <StatusDisplay status={verificationStatus as 'approved' | 'pending' | 'rejected' | null} />
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container mx-auto p-8 flex flex-col items-center animate-fade-in">
+        <div className="w-full max-w-2xl">
+          <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            Verification Status
+          </h1>
           
-          {verificationStatus === 'rejected' && (
-            <DocumentUploader 
-              error={uploadError}
-              uploading={uploading}
-              onFileChange={handleFileChange}
-              onUpload={handleUpload}
-            />
-          )}
-          
-          {!verificationStatus && (
-            <div className="text-center">
-              <p className="text-gray-600 mb-4">Please upload your healthcare license or relevant document for verification.</p>
-              <DocumentUploader 
-                error={uploadError}
-                uploading={uploading}
-                onFileChange={handleFileChange}
-                onUpload={handleUpload}
-              />
+          {isLoading ? (
+            <div className="flex items-center justify-center modern-card p-8">
+              <Loader2 className="animate-spin h-6 w-6 text-primary mr-3" />
+              <span className="text-muted-foreground">Checking status...</span>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="modern-card p-8 text-center animate-scale-in">
+                <StatusDisplay status={verificationStatus as 'approved' | 'pending' | 'rejected' | null} />
+              </div>
+              
+              {(verificationStatus === 'rejected' || !verificationStatus) && (
+                <div className="modern-card p-8 animate-slide-up">
+                  {!verificationStatus && (
+                    <div className="text-center mb-6">
+                      <h2 className="text-xl font-semibold mb-2 text-foreground">Document Upload Required</h2>
+                      <p className="text-muted-foreground">Please upload your healthcare license or relevant document for verification.</p>
+                    </div>
+                  )}
+                  <DocumentUploader 
+                    error={uploadError}
+                    uploading={uploading}
+                    onFileChange={handleFileChange}
+                    onUpload={handleUpload}
+                  />
+                </div>
+              )}
             </div>
           )}
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 };
