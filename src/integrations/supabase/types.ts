@@ -9,7 +9,144 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      chest_analysis: {
+        Row: {
+          ai_prediction: string | null
+          analysis_result: string | null
+          created_at: string | null
+          doctor_id: string | null
+          doctor_notes: string | null
+          id: string
+          image_path: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_prediction?: string | null
+          analysis_result?: string | null
+          created_at?: string | null
+          doctor_id?: string | null
+          doctor_notes?: string | null
+          id?: string
+          image_path: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_prediction?: string | null
+          analysis_result?: string | null
+          created_at?: string | null
+          doctor_id?: string | null
+          doctor_notes?: string | null
+          id?: string
+          image_path?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      consultations: {
+        Row: {
+          cost: number
+          created_at: string | null
+          doctor_id: string
+          id: string
+          notes: string | null
+          patient_id: string
+          scheduled_for: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cost?: number
+          created_at?: string | null
+          doctor_id: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          scheduled_for: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cost?: number
+          created_at?: string | null
+          doctor_id?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          scheduled_for?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      healthcare_verification: {
+        Row: {
+          created_at: string | null
+          document_path: string
+          id: string
+          license_number: string
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          specialization: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          document_path: string
+          id?: string
+          license_number: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          specialization: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          document_path?: string
+          id?: string
+          license_number?: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          specialization?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
