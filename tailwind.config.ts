@@ -63,7 +63,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Modern color palette - removed yellows
+				// Modern color palette with no yellow tones
 				medical: {
 					blue: {
 						light: '#60A5FA',
@@ -90,6 +90,11 @@ export default {
 						light: '#86EFAC',
 						DEFAULT: '#22C55E',
 						dark: '#16A34A'
+					},
+					coral: {
+						light: '#FDA4AF',
+						DEFAULT: '#F43F5E',
+						dark: '#E11D48'
 					}
 				}
 			},

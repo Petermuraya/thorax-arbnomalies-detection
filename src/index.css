@@ -26,7 +26,7 @@
     --accent: 239 246 255;
     --accent-foreground: 15 23 42;
 
-    --destructive: 239 68 68;
+    --destructive: 244 63 94;
     --destructive-foreground: 248 250 252;
 
     --border: 226 232 240;
@@ -55,7 +55,7 @@
     --popover: 30 41 59;
     --popover-foreground: 248 250 252;
 
-    --primary: 99 102 241;
+    --primary: 139 92 246;
     --primary-foreground: 248 250 252;
 
     --secondary: 51 65 85;
@@ -67,21 +67,21 @@
     --accent: 51 65 85;
     --accent-foreground: 248 250 252;
 
-    --destructive: 239 68 68;
+    --destructive: 244 63 94;
     --destructive-foreground: 248 250 252;
 
     --border: 51 65 85;
     --input: 51 65 85;
-    --ring: 99 102 241;
+    --ring: 139 92 246;
 
     --sidebar-background: 30 41 59;
     --sidebar-foreground: 248 250 252;
-    --sidebar-primary: 99 102 241;
+    --sidebar-primary: 139 92 246;
     --sidebar-primary-foreground: 248 250 252;
     --sidebar-accent: 51 65 85;
     --sidebar-accent-foreground: 248 250 252;
     --sidebar-border: 51 65 85;
-    --sidebar-ring: 99 102 241;
+    --sidebar-ring: 139 92 246;
   }
 
   * {
@@ -93,7 +93,7 @@
       hsl(var(--background)) 0%, 
       hsl(239 246 255) 25%, 
       hsl(219 234 254) 50%, 
-      hsl(229 255 255) 75%, 
+      hsl(204 251 255) 75%, 
       hsl(var(--background)) 100%);
     background-attachment: fixed;
     color: hsl(var(--foreground));
@@ -201,7 +201,7 @@
       hsl(var(--background)) 0%, 
       hsl(239 246 255) 25%, 
       hsl(219 234 254) 50%, 
-      hsl(229 255 255) 75%, 
+      hsl(204 251 255) 75%, 
       hsl(var(--background)) 100%);
     position: relative;
   }
@@ -215,8 +215,8 @@
     bottom: 0;
     background: 
       radial-gradient(circle at 20% 80%, hsl(var(--primary) / 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(239 246 255 / 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, hsl(219 234 254 / 0.2) 0%, transparent 50%);
+      radial-gradient(circle at 80% 20%, hsl(139 92 246 / 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, hsl(20 184 166 / 0.12) 0%, transparent 50%);
     pointer-events: none;
   }
 
@@ -239,7 +239,7 @@
 
   /* Modern button styles */
   .btn-modern {
-    @apply relative overflow-hidden bg-gradient-to-r from-primary to-blue-600 text-primary-foreground font-semibold py-2 px-6 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25;
+    @apply relative overflow-hidden bg-gradient-to-r from-primary to-purple-600 text-primary-foreground font-semibold py-2 px-6 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25;
   }
 
   .btn-modern::before {
